@@ -80,3 +80,79 @@ console.log(sentence);
 var sentence1 = words.reduceRight(concat);
 console.log("reduceright() function on words: ");
 console.log(sentence1);
+
+// Iterator function that returns a new array
+// There are two iterator functions that return new arrays: map() and filter(). The map()
+// function works like the forEach() function, applying a function to each element of an
+// array. The difference between the two functions is that map() returns a new array with
+// the results of the function application. Here is an example:
+function curve(grade) {
+    return grade += 5;
+}
+
+var grades = [77, 65, 81, 92, 83];
+var newgrades = grades.map(curve);
+console.log("map() function");
+console.log(newgrades);
+
+// An example using strings
+function first(word) {
+    return word[0];
+}
+
+var words = ["for", "your", "information"];
+var acronym = words.map(first);
+console.log("map() function using strings");
+console.log(acronym.join(""));
+
+// The filter() function works similarly to every(), but instead of returning true if all
+// the elements of an array satisfy a Boolean function, the function returns a new array
+// consisting of those elements that satisfy the Boolean function. Here is an example:
+function isEven(num) {
+    return num % 2 == 0;
+}
+
+function isOdd(num) {
+    return num % 2 != 0;
+}
+
+var nums = [];
+for (var i = 0; i < 20; ++i) {
+    nums[i] = i+1;
+}
+
+console.log("filter() function");
+var evens = nums.filter(isEven);
+console.log("Even numbers: ");
+console.log(evens);
+var odds = nums.filter(isOdd);
+console.log("Odd numbers: ");
+console.log(odds);
+
+// Here is another interesting use of filter():
+function passing(num) {
+    return num >= 60;
+}
+
+var grades = [];
+for(var i = 0; i < 20; i++) {
+    grades[i] = Math.floor(Math.random() * 101);
+}
+var passGrades = grades.filter(passing);
+console.log("All grades: ");
+console.log(grades);
+console.log("Passing grades: ");
+console.log(passGrades);
+
+// Of course, we can also use filter() with strings. Here is an example that applies the
+// spelling rule “i before e except after c”:
+function afterc(str) {
+    if(str.indexOf("cie") > -1) {
+        return true;
+    }
+    return false;
+}
+
+var words = ["recieve","deceive","percieve","deceit","concieve"];
+var misspelled = words.filter(afterc);
+console.log(misspelled);
