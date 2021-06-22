@@ -40,6 +40,10 @@ class Queue {
             return false;
         }
     }
+
+    count() {
+        return this.dataStore.length;
+    }
 }
 
 // test program
@@ -124,3 +128,110 @@ if(!femaleDancers.empty()) {
 if(!maleDancers.empty()) {
     console.log(maleDancers.front().name + " is waiting to dance.");
 }
+
+// One change we might want to make to the program is to display the number of male
+// and female dancers waiting to dance. We don’t have a function that displays the number
+// of elements in a queue, so we need to add it to the Queue class definition:
+
+var maleDancers = new Queue();
+var femaleDancers = new Queue();
+getDancers(maleDancers, femaleDancers);
+dance(maleDancers, femaleDancers);
+if(maleDancers.count() > 0) {
+    console.log("There are " + maleDancers.count() + " male dancers waiting to dance.");
+}
+if(femaleDancers.count() > 0) {
+    console.log("There are " + femaleDancers.count() + " female dancers waiting to dance.");
+}
+
+console.log("---------------------------------");
+
+// Sorting data with Queues
+// The radix sort works by making two passes over a data set, in this case the set of integers
+// from 0 to 99. The first pass sorts the numbers based on the 1s digit, and the second pass
+// sorts the numbers based on the 10s digit. Each number is placed in a bin based on the
+// digit in each of these two places. Given these numbers:
+// 91, 46, 85, 15, 92, 35, 31, 22
+// the first pass of the radix sort results in the following bin configuration:
+// Bin 0:
+// Bin 1: 91, 31
+// Bin 2: 92, 22
+// Bin 3:
+// Bin 4:
+// Bin 5: 85, 15, 35
+// Bin 6: 46
+// Bin 7:
+// Bin 8:
+// Bin 9:
+// Now the numbers are sorted based on which bin they are in:
+// 91, 31, 92, 22, 85, 15, 35, 46
+// Next, the numbers are sorted by the 10s digit into the appropriate bins:
+// Bin 0:
+// Bin 1: 15
+// Bin 2: 22
+// Bin 3: 31, 35
+// Bin 4: 46
+// Bin 5:
+// Bin 6:
+// Bin 7:
+// Bin 8: 85
+// Bin 9: 91, 92
+// Finally, take the numbers out of the bins and put them back into a list, and you get the
+// following sorted list of integers:
+// 15, 22, 31, 35, 46, 85, 91, 92
+
+// We can implement this algorithm by using queues to represent the bins. We need nine
+// queues, one for each digit. We will store the queues in an array. We uses the modulus
+// and integer division operations for determining the 1s and 10s digits. The remainder
+// of the algorithm entails adding numbers to their appropriate queues, taking the numbers
+// out of the queues to re-sort them based on the 1s digit, and the repeating the process
+// for the 10s digit. The result is a sorted set of integers.
+
+// First, here is the function that distributes numbers by the place (1s or 10s) digit:
+function distribute(nums, queues, n, digit) {
+    // digit represent either the 1s or 10s place
+    for(var i = 0; i < n; ++i) {
+        if(digit == 1) {
+            queues[nums[i]%10].enqueue(nums[i]);
+        } else {
+            queues[Math.floor(nums[i]/10)].enqueue(nums[i]);
+        }
+    }
+}
+
+// Here is the function for collecting numbers from the queues:
+function collect(queues, nums) {
+    var i = 0;
+    for(var digit = 0; digit < 10; ++digit) {
+        while(!queues[digit].empty()) {
+            nums[i++] = queues[digit].dequeue();
+        }
+    }
+}
+
+function displayArray(arr) {
+    var str = "";
+    for(var i = 0; i < arr.length; ++i) {
+        str += arr[i];
+        str += " ";
+    }
+    console.log(str);
+}
+
+// main program
+var queues = [];
+for(var i = 0; i < 10; ++i) {
+    queues[i] = new Queue();
+}
+var nums = [];
+for(var i = 0; i < 10; ++i) {
+    nums[i] = Math.floor(Math.floor(Math.random() * 101));
+}
+console.log("Before radix sort: ");
+displayArray(nums);
+distribute(nums, queues, 10, 1);
+collect(queues, nums);
+distribute(nums, queues, 10, 10);
+collect(queues, nums);
+console.log("\nAfter radix sort: ");
+displayArray(nums);
