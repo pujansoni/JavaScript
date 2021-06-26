@@ -15,7 +15,7 @@ b.next = c;
 c.next = d;
 
 const print = (head) => {
-    if(head === null) return;
+    if (head === null) return;
     console.log(head.val);
     print(head.next);
 }
@@ -36,7 +36,7 @@ const print = (head) => {
 // };
 
 const reverseList = (curr, prev = null) => {
-    if(curr === null) {
+    if (curr === null) {
         return prev;
     }
 
