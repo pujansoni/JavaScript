@@ -14,7 +14,7 @@ const permutations = (elements) => {
     const rest = elements.slice(1);
 
     const permsWithoutFirst = permutations(rest);
-
+    
     const allPermutations = [];
 
     permsWithoutFirst.forEach(perm => {
