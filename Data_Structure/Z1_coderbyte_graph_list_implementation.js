@@ -168,3 +168,16 @@ console.log(nodeC.getAdjacentNodes());
 console.log(nodeA.isConnectedG(nodeB));
 
 
+// Undirected Graph
+// In an undirected graph, when there is a connection between nodes, it goes both ways
+// Facebook and its users and the relationship between the users can be modeled as an undirected graph
+// Users are nodes and friendships between the users are edges
+// There may be many ways two users are connected on Facebook
+// The graph is undirected because if you are friends with someone on Facebook, they are by definition friends with you in return
+
+// Directed Graph
+// In a directed graph, connections between nodes have direction
+// The internet can be modeled as a directed graph, where individual web pages are nodes and links between the pages are directed edges
+// Links are directed - just because one page links to another does not mean that page links back in return
+// The degree of a node is the number of edges connected to the node
+// In a directed graph, nodes have an indegree or edges pointing to it and an outdegree or edges pointing from it
