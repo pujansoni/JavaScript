@@ -13,9 +13,11 @@ class Node {
 class LList {
     constructor() {
         this.head = new Node("head");
+        // Here after initializing we are declaring the next item of any element to point towards the head. We will take care of the pointer during the other functions but by default it points to head itself
         this.head.next = this.head;
     }
 
+    // Here we will find the item by checking two conditions a) If the current item is not the item we are looking for then move next & b) If the next item is not pointing towards the head then we will move forward in the circular linked list to cover the edge about the last edge in the circular linked list which will point towards the head
     find(item) {
         let currNode = this.head;
         while((currNode.element != item) && !(currNode.next.element == "head")) {
@@ -31,6 +33,7 @@ class LList {
         current.next = newNode;
     }
 
+    // Here we will use the condition in the while loop which states if the next element is not pointing towards the head move forward in the list in order to print the elements of the list
     display() {
         let currNode = this.head;
         while(!(currNode.next == null) && !(currNode.next.element == "head")) {
@@ -54,7 +57,7 @@ class LList {
         }
     }
 
-    // A recursive solution for reverse printing the circular linked list
+    // A recursive solution for reverse printing the circular linked list. It will print the element in the reverse linked list as in each recursive call we are supplying the next value which ultimately leads towards our base case where the next element will point to "head" in which we will return and execute all our console.log() statements that are on our call stack
     dispReverse(arg1 = this.head) {
         let currNode = arg1;
         if (currNode.next.element == "head") {
