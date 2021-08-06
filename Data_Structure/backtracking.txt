@@ -1,0 +1,29 @@
+The backtracking problems template is given below:
+
+def is_valid_state(state):
+    # check if it is a valid solution
+    return True
+
+def get_candidates(state):
+    return []
+
+def search(state, solution):
+    if is_valid_state(state):
+        solutions.append(state.copy())
+        # return
+    
+    for candidate in get_candidates(state):
+        state.add(candidate)
+        search(state, solutions)
+        state.remove(candidate)
+
+def solve();
+    solutions = []
+    state = set()
+    search(state, solutions)
+    return solutions
+
+
+In the n queen problem the is_valid_state() function in the above template means all the queens are in a valid position i.e. in a position in which a queen can't attack each other
+The get_candidates() is used to get a list of candidates that is used to construct the next state
+The search() is the recursive function that uses the get_candidates() and the is_valid_state() function to check if our state is a valid solution to our backtracking problem. If is then it records the solution by making a deep copy of the state, the return statement is commented because depending on the problem, if some problem asks for more than one solution then we will comment out or else we will return the state as soon as we find it.
