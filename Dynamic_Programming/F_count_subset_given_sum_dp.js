@@ -1,12 +1,12 @@
 function countSubset(arr, n, sum) {
     // The value of subset[i][j] will be true if there is a subset of set[0..j-1] with sum equal to i
     let subset = Array.from(Array(n+1), () => new Array(sum+1));
-    // If sum is 0, then answer is true
+    // If sum is 0, then answer is true/1
     for(let i = 0; i <= n; i++) {
         subset[i][0] = 1;
     }
     
-    // If sum is not 0 and set is empty, then answer is false
+    // If sum is not 0 and set is empty, then answer is false/0
     for(let i = 1; i <= sum; i++) {
         subset[0][i] = 0;
     }

@@ -1,3 +1,6 @@
+// The goal of the subset sum problem is to find a subset is present with given sum X (return type is boolean)
+// The goal of the subsets with given sum is to count number of subsets with sum X (return type is integer)
+
 function countSubset(arr, n, sum) {
     // Base Cases
     if(sum === 0) {

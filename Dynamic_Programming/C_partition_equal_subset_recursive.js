@@ -6,9 +6,11 @@ let n = arr.length;
 for(let i = 0; i < n; i++) {
     sum += arr[i];
 }
+// If sum of all the elements is ODD, then we can never find equal sum partition because all numbers are integers
 if(sum % 2 == 1) {
     return false;
 }
+// If it is possible to form a subset sum = sum/2, then the rest of the elements will be of equal sum
 let mem = Array.from(Array(n+1), () => {
     let arr = new Array(sum/2+1);
     return arr.fill(-1);
