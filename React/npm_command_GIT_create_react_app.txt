@@ -1,0 +1,18 @@
+NPM INIT - creates package.json (manifest) file, list dependencies
+
+-- Install Package Locally (default) and add to package.json
+NPM INSTALL <package name> --save 
+
+-- Install Package Globally (access anywhere) SUDO
+NPM INSTALL <package name> -g
+
+-- Use it only in development
+NPM INSTALL <package name> --save-dev
+
+NOTE WHILE PUSHING THE PROJECT TO GITHUB:
+It's important NOT to push the node_modules folder in the GITHUB as it's a large folder.
+When we take the pull from the GITHUB we can use the "npm install" command to install all the dependencies
+
+The create-react-app (https://github.com/facebook/create-react-app) provides a starter project where we can create the boiler plate code for the react application. It uses Babel and WebPack under the hood.
+Babel is a JavaScript Compiler that converts the ES6 JavaScript code to ES5 JavaScript which supports in older browsers as well.
+The main feature of WebPack is bundling the resources, watching for changes and running Babel.
