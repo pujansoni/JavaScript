@@ -16,3 +16,19 @@ When we take the pull from the GITHUB we can use the "npm install" command to in
 The create-react-app (https://github.com/facebook/create-react-app) provides a starter project where we can create the boiler plate code for the react application. It uses Babel and WebPack under the hood.
 Babel is a JavaScript Compiler that converts the ES6 JavaScript code to ES5 JavaScript which supports in older browsers as well.
 The main feature of WebPack is bundling the resources, watching for changes and running Babel.
+
+
+After creating a React Project there are several commands we can run inside the directory where we created the React Project
+npm start - Starts the development server
+npm run build - Bundles the app into static files for production
+npm test - Starts the test runner
+npm run eject - Removes this tool and copies build dependencies, configuration files and scripts into the app directory. If you do this, you can't go back!
+
+It's advisable to start by following commands after running the command npx create-react-app /folder-name-of-react-project:
+cd /folder-name-of-react-project
+npm start
+
+Whenever we import a project or delete the node_modules folder then we can always install all the dependencies by using the command: npm install
+
+To have the production ready build we can run the command: npm run build 
+This command will create a build folder which will contain the production ready build
