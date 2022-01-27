@@ -9,9 +9,21 @@ import ReactDom from 'react-dom';
 // import './index.js'
 import './index.css';
 
+// setup variables
+const firstBook = {
+  img: 'https://m.media-amazon.com/images/I/51IYIenoI9S._AC_UL800_QL65_.jpg',
+  title: 'Five Little Indians',
+  author: 'Michelle Good'
+}
+const secondBook = {
+  img: 'https://images-na.ssl-images-amazon.com/images/I/41kspFBwVxL._AC_SX184_.jpg',
+  title: '12 Rules for Life',
+  author: 'Jordan B. Peterson'
+}
+
 // The react component functions are capitalized as shown below. React knows that this is special component as we capitalized the function name. This is a stateless functional component. Here we will return some HTML code (it's known as JSX officially which we will see later on)
 // function Greeting() {
-//   return <h4>this is pujan and this is my first component</h4>;
+  //   return <h4>this is pujan and this is my first component</h4>;
 // }
 
 // We can also write the Greeting() component with arrow function as given below
@@ -78,29 +90,53 @@ const Message = () => {
 function BookList() {
   return (
     <section className="booklist">
-      <Book />
+      {/* Here whenever we are passing anything as the properties of the React Component it will be accessible in the respective Components first  parameter (i.e. props in this case) */}
+      <Book 
+        img={firstBook.img} 
+        title={firstBook.title} 
+        author={firstBook.author} 
+      />
+      <Book 
+        img={secondBook.img} 
+        title={secondBook.title} 
+        author={secondBook.author} 
+      />
     </section>  
   );
 }
 
-const Book = () => {
+const Book = (props) => {
+  console.log(props);
   return (
     <article className="book">
-      <Image />
-      <Title />
-      <Author />
+      <img src={props.img} alt="" />
+      {/* Here the JavaScript variable is referred inside the curly braces in the h1 tag */}
+      <h1>{props.title}</h1>
+      <h4>{props.author}</h4>
+      {/* Here we can also use the JavaScript methods as given below:
+        <h4>{author.toUpperCase()}</h4>
+      */}
+      {/* The JavaScript code inside the JSX must return a value/expression and it shouls not return the statement so the code below will generate an error:
+        <p>{let x = 6}</p>
+        However, the line given below will work:
+        <p>{6+6}</p>
+      */}
+      {/* We can access the properties passed in the first parameter as given below. Here if the property is not present for a component then it won't display anything*/}
     </article>
   );
 }
 
+// This is an individual component for reference
 const Image = () => (
   <img src="https://images-na.ssl-images-amazon.com/images/I/518g-3yvGZL._AC_SX368_.jpg" alt="" />
 );
 
+// This is an individual component for reference
 const Title = () => <h1>Eyes That Speak to the Stars</h1>;
 
 // We can also add the inline CSS but the syntax to add the inline css in the JSX way is different as we will use the curly braces and add all the CSS properties as the key-value pairs same as JS objects 
 // Inline CSS takes precedence over the external CSS
+// This is an individual component for reference
 const Author = () => <h4 style={{ color: '#617d98', fontSize: '0.75rem', marginTop: '0.25rem' }}>Joanna Ho, Dung Ho</h4>;
 
 // Now we need some way to inject the Greeting() component in the index.html file of the application which we can do by using the ReactDom method. ReactDom has the render method
