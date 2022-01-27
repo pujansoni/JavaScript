@@ -42,14 +42,11 @@ import ReactDom from 'react-dom'
 // close every element
 // formatting
 // Always use the parenthesis after the return keyword in a React Component
-function Greeting() {
+function Greeting1() {
   return (
     <div>
       <h3>Hello World</h3>
       <ul>
-        <li>
-          <a href="#">hello world</a>
-        </li>
         <img src='' alt='' />
         <input type='text' name='' id='' />
       </ul>
@@ -57,7 +54,49 @@ function Greeting() {
   );
 }
 
+// Nested Components
+function Greeting() {
+  return (
+    <div>
+      <Person />
+      <Message />
+    </div>
+  );
+}
+
+const Person = () => <h2>john doe</h2>;
+const Message = () => {
+  return <p>this is my message</p>;
+}
+
+function BookList() {
+  return (
+    <section>
+      <Book />
+      <Book />
+    </section>  
+  );
+}
+
+const Book = () => {
+  return (
+    <article>
+      <Image />
+      <Title />
+      <Author />
+    </article>
+  );
+}
+
+const Image = () => (
+  <img src="https://images-na.ssl-images-amazon.com/images/I/518g-3yvGZL._AC_SX368_.jpg" alt="" />
+);
+
+const Title = () => <h1>Eyes That Speak to the Stars</h1>;
+
+const Author = () => <h4>Joanna Ho, Dung Ho</h4>;
+
 // Now we need some way to inject the Greeting() component in the index.html file of the application which we can do by using the ReactDom method. ReactDom has the render method
 // The render method has two parameters. The first parameter indicates what we need to render i.e. Greeting() in this case. The second parameter indicates where we want to render it i.e. in the root div of the index.html file
-ReactDom.render(<Greeting />, document.getElementById('root'));
+ReactDom.render(<BookList />, document.getElementById('root'));
 // Here we need to either self close the react component (as shown above) or we can use the closing tag (i.e. we can also use <Greeting></Greeting>)
