@@ -1,7 +1,13 @@
 // The index.js is the entry point of the react application
 // Here we are using the ES6 modules to import react
-import React from 'react'
-import ReactDom from 'react-dom'
+import React from 'react';
+import ReactDom from 'react-dom';
+
+// CSS
+// For CSS we need to import the full relative path as its not a project dependency
+// Here if it was a JS file not present in the dependency then the syntax of the relative path will be
+// import './index.js'
+import './index.css';
 
 // The react component functions are capitalized as shown below. React knows that this is special component as we capitalized the function name. This is a stateless functional component. Here we will return some HTML code (it's known as JSX officially which we will see later on)
 // function Greeting() {
@@ -71,8 +77,7 @@ const Message = () => {
 
 function BookList() {
   return (
-    <section>
-      <Book />
+    <section className="booklist">
       <Book />
     </section>  
   );
@@ -80,7 +85,7 @@ function BookList() {
 
 const Book = () => {
   return (
-    <article>
+    <article className="book">
       <Image />
       <Title />
       <Author />
@@ -94,7 +99,9 @@ const Image = () => (
 
 const Title = () => <h1>Eyes That Speak to the Stars</h1>;
 
-const Author = () => <h4>Joanna Ho, Dung Ho</h4>;
+// We can also add the inline CSS but the syntax to add the inline css in the JSX way is different as we will use the curly braces and add all the CSS properties as the key-value pairs same as JS objects 
+// Inline CSS takes precedence over the external CSS
+const Author = () => <h4 style={{ color: '#617d98', fontSize: '0.75rem', marginTop: '0.25rem' }}>Joanna Ho, Dung Ho</h4>;
 
 // Now we need some way to inject the Greeting() component in the index.html file of the application which we can do by using the ReactDom method. ReactDom has the render method
 // The render method has two parameters. The first parameter indicates what we need to render i.e. Greeting() in this case. The second parameter indicates where we want to render it i.e. in the root div of the index.html file
