@@ -110,11 +110,15 @@ function BookList() {
   );
 }
 
-// Here the children prop contains the unique elements available only on certain components and it can be accessed via the children (Note the naming convention is to name the last variable as children)
-const Book = ({img, title, author, children}) => { 
+const Book = ({img, title, author, children) => { 
   // Sometimes the props parameter is too large so we can use the JavaScript destructure property and avoid setting up the prop parameter
   // We can comment out the line given below and just use the object directly as the Book parameter
   // const {img, title, author} = props;
+  // Here after commenting the line above we can alternatively destructure it directly when we create the function as shown by the example given below
+  // const Book = ({img, title, author})
+  // The children prop contains the unique elements available only on certain components and it can be accessed via the children (Note the naming convention is to name the last variable as children)
+  // One way to access it is shown below
+  // const Book = ({img, title, author, children})
   return (
     <article className="book">
       <img src={img} alt="" />
