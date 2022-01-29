@@ -11,12 +11,12 @@ import './index.css';
 
 // setup variables
 const firstBook = {
-  img: 'https://m.media-amazon.com/images/I/51IYIenoI9S._AC_UL800_QL65_.jpg',
+  img: 'https://m.media-amazon.com/images/I/61Dqa+W4hXL._AC_UL800_QL65_.jpg',
   title: 'Five Little Indians',
   author: 'Michelle Good'
 }
 const secondBook = {
-  img: 'https://images-na.ssl-images-amazon.com/images/I/41kspFBwVxL._AC_SX184_.jpg',
+  img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
   title: '12 Rules for Life',
   author: 'Jordan B. Peterson'
 }
@@ -110,7 +110,7 @@ function BookList() {
   );
 }
 
-const Book = ({img, title, author, children) => { 
+const Book = (props) => { 
   // Sometimes the props parameter is too large so we can use the JavaScript destructure property and avoid setting up the prop parameter
   // We can comment out the line given below and just use the object directly as the Book parameter
   // const {img, title, author} = props;
@@ -119,6 +119,8 @@ const Book = ({img, title, author, children) => {
   // The children prop contains the unique elements available only on certain components and it can be accessed via the children (Note the naming convention is to name the last variable as children)
   // One way to access it is shown below
   // const Book = ({img, title, author, children})
+  const {img, title, author, children} = props;
+
   return (
     <article className="book">
       <img src={img} alt="" />
