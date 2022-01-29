@@ -95,7 +95,12 @@ function BookList() {
         img={firstBook.img} 
         title={firstBook.title} 
         author={firstBook.author} 
-      />
+      >
+        {/* If we have some fields that are unique to certain component then we can close the component using <component></component> instead of <component /> */}
+        {/* Here the description is unique to the first book and the second book component does not contain the description */}
+        {/* This is known as children prop and it's also available in the prop object */}
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et neque pulvinar, ultrices purus eu, lacinia ante. Phasellus id lacus.</p>
+      </Book>
       <Book 
         img={secondBook.img} 
         title={secondBook.title} 
@@ -105,14 +110,17 @@ function BookList() {
   );
 }
 
-const Book = (props) => {
-  console.log(props);
+// Here the children prop contains the unique elements available only on certain components and it can be accessed via the children (Note the naming convention is to name the last variable as children)
+const Book = ({img, title, author, children}) => { 
+  // Sometimes the props parameter is too large so we can use the JavaScript destructure property and avoid setting up the prop parameter
+  // We can comment out the line given below and just use the object directly as the Book parameter
+  // const {img, title, author} = props;
   return (
     <article className="book">
-      <img src={props.img} alt="" />
+      <img src={img} alt="" />
       {/* Here the JavaScript variable is referred inside the curly braces in the h1 tag */}
-      <h1>{props.title}</h1>
-      <h4>{props.author}</h4>
+      <h1>{title}</h1>
+      <h4>{author}</h4>
       {/* Here we can also use the JavaScript methods as given below:
         <h4>{author.toUpperCase()}</h4>
       */}
@@ -122,6 +130,7 @@ const Book = (props) => {
         <p>{6+6}</p>
       */}
       {/* We can access the properties passed in the first parameter as given below. Here if the property is not present for a component then it won't display anything*/}
+      {children}
     </article>
   );
 }
