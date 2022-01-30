@@ -22,16 +22,19 @@ import './index.css';
 
 const books = [
   {
+    id: 1,
     img: 'https://m.media-amazon.com/images/I/61Dqa+W4hXL._AC_UL800_QL65_.jpg',
     title: 'Five Little Indians',
     author: 'Michelle Good'
   },
   {
+    id: 2,
     img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
     title: '12 Rules for Life',
     author: 'Jordan B. Peterson'
   },
   {
+    id: 3,
     img: 'https://images-na.ssl-images-amazon.com/images/I/51gNCTAbLJS._AC_SX368_.jpg',
     title: 'Crying in H Mart: A Memoir',
     author: 'Michelle Zauner'
@@ -135,12 +138,13 @@ function BookList() {
         title={secondBook.title} 
         author={secondBook.author} 
       /> */}
+      {/* Now we will set up the key prop. Each time we create a list in react we need a unique key prop to keep track of change in each item in the list. Here we have set an id field in the book array assuming that each id is unique. Now instead of destructing the id we will set up the key property in the prop to that of id */}
       {
         books.map((book) => {
           const {img, title, author} = book;
           return (
             // Here we are passing the book prop to the Book component and assigning the current book to the prop
-            <Book book={book}></Book>
+            <Book key={book.id} book={book}></Book>
           );
         })
       }
