@@ -30,6 +30,11 @@ const books = [
     img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
     title: '12 Rules for Life',
     author: 'Jordan B. Peterson'
+  },
+  {
+    img: 'https://images-na.ssl-images-amazon.com/images/I/51gNCTAbLJS._AC_SX368_.jpg',
+    title: 'Crying in H Mart: A Memoir',
+    author: 'Michelle Zauner'
   }
 ];
 
@@ -130,8 +135,15 @@ function BookList() {
         title={secondBook.title} 
         author={secondBook.author} 
       /> */}
-
-
+      {
+        books.map((book) => {
+          const {img, title, author} = book;
+          return (
+            // Here we are passing the book prop to the Book component and assigning the current book to the prop
+            <Book book={book}></Book>
+          );
+        })
+      }
     </section>  
   );
 }
@@ -145,7 +157,8 @@ const Book = (props) => {
   // The children prop contains the unique elements available only on certain components and it can be accessed via the children (Note the naming convention is to name the last variable as children)
   // One way to access it is shown below
   // const Book = ({img, title, author, children})
-  const {img, title, author, children} = props;
+  // Here the props object contains the book as its first field and we have to destructure the book field to get the required data
+  const {img, title, author, children} = props.book;
 
   return (
     <article className="book">
