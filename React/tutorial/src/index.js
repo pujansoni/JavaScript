@@ -10,16 +10,40 @@ import ReactDom from 'react-dom';
 import './index.css';
 
 // setup variables
-const firstBook = {
-  img: 'https://m.media-amazon.com/images/I/61Dqa+W4hXL._AC_UL800_QL65_.jpg',
-  title: 'Five Little Indians',
-  author: 'Michelle Good'
-}
-const secondBook = {
-  img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
-  title: '12 Rules for Life',
-  author: 'Jordan B. Peterson'
-}
+// For a regular array you can directly pass the array and display it in the React component
+// const names = ['john', 'peter', 'susan'];
+// Directly passing the names in the BookList() component doesn't make any sense so we can wrap each element using the map method as shown below
+// const newNames = names.map((name) => {
+//   return <h1>{name}</h1>;
+// });
+// console.log(newNames);
+// Here we can directly pass the newNames to our BookList() compenent which will display each name in heading 1
+// Next we can see how to iterate over the array of the objects and instead of returning heading 1 we can return the component for each item
+
+const books = [
+  {
+    img: 'https://m.media-amazon.com/images/I/61Dqa+W4hXL._AC_UL800_QL65_.jpg',
+    title: 'Five Little Indians',
+    author: 'Michelle Good'
+  },
+  {
+    img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
+    title: '12 Rules for Life',
+    author: 'Jordan B. Peterson'
+  }
+];
+
+// Commenting the below declaration and converting the individual object declaration in to the array of objects as shown above
+// const firstBook = {
+//   img: 'https://m.media-amazon.com/images/I/61Dqa+W4hXL._AC_UL800_QL65_.jpg',
+//   title: 'Five Little Indians',
+//   author: 'Michelle Good'
+// }
+// const secondBook = {
+  //   img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
+  //   title: '12 Rules for Life',
+  //   author: 'Jordan B. Peterson'
+  // }
 
 // The react component functions are capitalized as shown below. React knows that this is special component as we capitalized the function name. This is a stateless functional component. Here we will return some HTML code (it's known as JSX officially which we will see later on)
 // function Greeting() {
@@ -91,21 +115,23 @@ function BookList() {
   return (
     <section className="booklist">
       {/* Here whenever we are passing anything as the properties of the React Component it will be accessible in the respective Components first  parameter (i.e. props in this case) */}
-      <Book 
+      {/* <Book 
         img={firstBook.img} 
         title={firstBook.title} 
         author={firstBook.author} 
-      >
+      > */}
         {/* If we have some fields that are unique to certain component then we can close the component using <component></component> instead of <component /> */}
         {/* Here the description is unique to the first book and the second book component does not contain the description */}
         {/* This is known as children prop and it's also available in the prop object */}
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et neque pulvinar, ultrices purus eu, lacinia ante. Phasellus id lacus.</p>
-      </Book>
+        {/* <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et neque pulvinar, ultrices purus eu, lacinia ante. Phasellus id lacus.</p> */}
+      {/* </Book>
       <Book 
         img={secondBook.img} 
         title={secondBook.title} 
         author={secondBook.author} 
-      />
+      /> */}
+
+
     </section>  
   );
 }
@@ -136,7 +162,7 @@ const Book = (props) => {
         <p>{6+6}</p>
       */}
       {/* We can access the properties passed in the first parameter as given below. Here if the property is not present for a component then it won't display anything*/}
-      {children}
+      {/* {children} */}
     </article>
   );
 }
