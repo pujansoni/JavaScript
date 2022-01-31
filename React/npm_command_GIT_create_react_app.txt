@@ -32,3 +32,8 @@ Whenever we import a project or delete the node_modules folder then we can alway
 
 To have the production ready build we can run the command: npm run build 
 This command will create a build folder which will contain the production ready build
+
+React/tutorial project
+For the React/tutorial project, created the build using the command: npm run build
+Drag and Drop the build folder in the Netlify website.
+The site is live under the domain https://react-basics-tutorial-pujan.netlify.app/
