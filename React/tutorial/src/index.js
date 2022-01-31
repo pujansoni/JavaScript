@@ -9,115 +9,10 @@ import ReactDom from 'react-dom';
 // import './index.js'
 import './index.css';
 
-// setup variables
-// For a regular array you can directly pass the array and display it in the React component
-// const names = ['john', 'peter', 'susan'];
-// Directly passing the names in the BookList() component doesn't make any sense so we can wrap each element using the map method as shown below
-// const newNames = names.map((name) => {
-//   return <h1>{name}</h1>;
-// });
-// console.log(newNames);
-// Here we can directly pass the newNames to our BookList() compenent which will display each name in heading 1
-// Next we can see how to iterate over the array of the objects and instead of returning heading 1 we can return the component for each item
-
-const books = [
-  {
-    id: 1,
-    img: 'https://m.media-amazon.com/images/I/61Dqa+W4hXL._AC_UL800_QL65_.jpg',
-    title: 'Five Little Indians',
-    author: 'Michelle Good'
-  },
-  {
-    id: 2,
-    img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
-    title: '12 Rules for Life',
-    author: 'Jordan B. Peterson'
-  },
-  {
-    id: 3,
-    img: 'https://images-na.ssl-images-amazon.com/images/I/51gNCTAbLJS._AC_SX368_.jpg',
-    title: 'Crying in H Mart: A Memoir',
-    author: 'Michelle Zauner'
-  }
-];
-
-// Commenting the below declaration and converting the individual object declaration in to the array of objects as shown above
-// const firstBook = {
-//   img: 'https://m.media-amazon.com/images/I/61Dqa+W4hXL._AC_UL800_QL65_.jpg',
-//   title: 'Five Little Indians',
-//   author: 'Michelle Good'
-// }
-// const secondBook = {
-  //   img: 'https://m.media-amazon.com/images/I/81Lb75rUhLL._AC_UL800_QL65_.jpg',
-  //   title: '12 Rules for Life',
-  //   author: 'Jordan B. Peterson'
-  // }
-
-// The react component functions are capitalized as shown below. React knows that this is special component as we capitalized the function name. This is a stateless functional component. Here we will return some HTML code (it's known as JSX officially which we will see later on)
-// function Greeting() {
-  //   return <h4>this is pujan and this is my first component</h4>;
-// }
-
-// We can also write the Greeting() component with arrow function as given below
-// The createElement() function has three parameter. The first one indicates what element do we want to return . The second parameter is the Props object (Will pass an empty object for now). The third parameter is the children which indicates what is going to be rendered inside the element
-// const Greeting = () => {
-//   return React.createElement('h1', {}, 'hello world');
-// }
-
-// But the above arrow function gets messier if there are two element in our Component that we want to return
-// function Greeting() {
-//   return (
-//     <div>
-//       <h1>Hello World</h1>
-//     </div>
-//   );
-// }
-
-// Let us write the corresponding arrow function syntax for the above function
-// const Greeting = () => {
-//   return React.createElement(
-//     'div',
-//     {},
-//     React.createElement('h1', {}, 'Hello World')
-//   );
-// };
-
-// For now we will just use the regular function as it's easier
-// As mentioned before the Greeting() react component returns the JSX code
-// JSX rules
-// return single element
-// div / section / article or Fragment
-// use camelCase for html attribute
-// className instead of class
-// close every element
-// formatting
-// Always use the parenthesis after the return keyword in a React Component
-function Greeting1() {
-  return (
-    <div>
-      <h3>Hello World</h3>
-      <ul>
-        <img src='' alt='' />
-        <input type='text' name='' id='' />
-      </ul>
-    </div>
-  );
-}
-
-// Nested Components
-function Greeting() {
-  return (
-    <div>
-      <Person />
-      <Message />
-    </div>
-  );
-}
-
-const Person = () => <h2>john doe</h2>;
-const Message = () => {
-  return <p>this is my message</p>;
-}
+// Here to import the named export of books.js we will use the curly braces as shown below to import it in the index.js. Moreover, as it is not a built-in node modules we will use the relative import to import the books and we don't need the .js extension as it's a javascript file
+import {data} from './books'
+// Here as we have used the default export in the Book.js file we can import the Book component in this file. We can also use a different name and import it under a different name as we have used the default export in Book.js and changed the name from Book -> SpecificBook
+import SpecificBook from './Book'
 
 function BookList() {
   return (
@@ -140,68 +35,17 @@ function BookList() {
       /> */}
       {/* Now we will set up the key prop. Each time we create a list in react we need a unique key prop to keep track of change in each item in the list. Here we have set an id field in the book array assuming that each id is unique. Now instead of destructing the id we will set up the key property in the prop to that of id */}
       {
-        books.map((book) => {
+        data.map((book) => {
           const {img, title, author} = book;
           return (
             // Here we are passing the book prop to the Book component and assigning the current book to the prop
             // <Book key={book.id} book={book}></Book>
             // Alternatively, you can also use the spread operator to assign separate properties as given below
-            <Book key={book.id} {...book}></Book>
+            <SpecificBook key={book.id} {...book}></SpecificBook>
           );
         })
       }
     </section>  
-  );
-}
-
- const Book = (props) => { 
-  // Sometimes the props parameter is too large so we can use the JavaScript destructure property and avoid setting up the prop parameter
-  // We can comment out the line given below and just use the object directly as the Book parameter
-  // const {img, title, author} = props;
-  // Here after commenting the line above we can alternatively destructure it directly when we create the function as shown by the example given below
-  // const Book = ({img, title, author})
-  // The children prop contains the unique elements available only on certain components and it can be accessed via the children (Note the naming convention is to name the last variable as children)
-  // One way to access it is shown below
-  // const Book = ({img, title, author, children})
-  // Here the props object contains the book as its first field and we have to destructure the book field to get the required data
-  // const {img, title, author, children} = props.book;
-  // If you are using the spread operator 
-  const {img, title, author} = props;
-
-  // attribute, eventHandler
-  // onClick, onMouseOver
-  const clickHandler = (e) => {
-    console.log(e);
-    console.log(e.target);
-    alert("Hello World");
-  };
-  const complexExample = (author) => {
-    console.log(author);
-  };
-
-  return (
-    <article className="book" onMouseOver={() => {
-      console.log(title);
-    }}>
-      <img src={img} alt="" />
-      {/* Here the JavaScript variable is referred inside the curly braces in the h1 tag */}
-      <h1 onClick={() => console.log(title)}>{title}</h1>
-      <h4>{author}</h4>
-      {/* Here we can also use the JavaScript methods as given below:
-        <h4>{author.toUpperCase()}</h4>
-      */}
-      {/* The JavaScript code inside the JSX must return a value/expression and it shouls not return the statement so the code below will generate an error:
-        <p>{let x = 6}</p>
-        However, the line given below will work:
-        <p>{6+6}</p>
-      */}
-      {/* We can access the properties passed in the first parameter as given below. Here if the property is not present for a component then it won't display anything*/}
-      {/* {children} */}
-      <button type="button" onClick={clickHandler}>reference example</button>
-      {/* Here in the complexExample() function if we invoke the function directly on the onClick event then it will run as soon as we load the app. To avoid this we will use the arrow function */}
-      {/* <button type="button" onClick={complexExample(author)}>more complex example</button> */}
-      <button type="button" onClick={() => complexExample(author)}>more complex example</button>
-    </article>
   );
 }
 
