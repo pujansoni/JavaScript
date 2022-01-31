@@ -194,7 +194,9 @@ function BookList() {
       {/* We can access the properties passed in the first parameter as given below. Here if the property is not present for a component then it won't display anything*/}
       {/* {children} */}
       <button type="button" onClick={clickHandler}>reference example</button>
-      <button type="button" onClick={complexExample(author)}>more complex example</button>
+      {/* Here in the complexExample() function if we invoke the function directly on the onClick event then it will run as soon as we load the app. To avoid this we will use the arrow function */}
+      {/* <button type="button" onClick={complexExample(author)}>more complex example</button> */}
+      <button type="button" onClick={() => complexExample(author)}>more complex example</button>
     </article>
   );
 }
