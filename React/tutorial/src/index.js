@@ -168,11 +168,20 @@ function BookList() {
   // If you are using the spread operator 
   const {img, title, author} = props;
 
-    return (
+  // attribute, eventHandler
+  // onClick, onMouseOver
+  const clickHandler = () => {
+    alert("Hello World");
+  };
+  const complexExample = (author) => {
+    console.log(author);
+  };
+
+  return (
     <article className="book">
       <img src={img} alt="" />
       {/* Here the JavaScript variable is referred inside the curly braces in the h1 tag */}
-      <h1>{title}</h1>
+      <h1 onClick={() => console.log(title)}>{title}</h1>
       <h4>{author}</h4>
       {/* Here we can also use the JavaScript methods as given below:
         <h4>{author.toUpperCase()}</h4>
@@ -184,6 +193,8 @@ function BookList() {
       */}
       {/* We can access the properties passed in the first parameter as given below. Here if the property is not present for a component then it won't display anything*/}
       {/* {children} */}
+      <button type="button" onClick={clickHandler}>reference example</button>
+      <button type="button" onClick={complexExample(author)}>more complex example</button>
     </article>
   );
 }
