@@ -144,7 +144,9 @@ function BookList() {
           const {img, title, author} = book;
           return (
             // Here we are passing the book prop to the Book component and assigning the current book to the prop
-            <Book key={book.id} book={book}></Book>
+            // <Book key={book.id} book={book}></Book>
+            // Alternatively, you can also use the spread operator to assign separate properties as given below
+            <Book key={book.id} {...book}></Book>
           );
         })
       }
@@ -152,7 +154,7 @@ function BookList() {
   );
 }
 
-const Book = (props) => { 
+ const Book = (props) => { 
   // Sometimes the props parameter is too large so we can use the JavaScript destructure property and avoid setting up the prop parameter
   // We can comment out the line given below and just use the object directly as the Book parameter
   // const {img, title, author} = props;
@@ -162,9 +164,11 @@ const Book = (props) => {
   // One way to access it is shown below
   // const Book = ({img, title, author, children})
   // Here the props object contains the book as its first field and we have to destructure the book field to get the required data
-  const {img, title, author, children} = props.book;
+  // const {img, title, author, children} = props.book;
+  // If you are using the spread operator 
+  const {img, title, author} = props;
 
-  return (
+    return (
     <article className="book">
       <img src={img} alt="" />
       {/* Here the JavaScript variable is referred inside the curly braces in the h1 tag */}
