@@ -170,7 +170,9 @@ function BookList() {
 
   // attribute, eventHandler
   // onClick, onMouseOver
-  const clickHandler = () => {
+  const clickHandler = (e) => {
+    console.log(e);
+    console.log(e.target);
     alert("Hello World");
   };
   const complexExample = (author) => {
@@ -178,7 +180,9 @@ function BookList() {
   };
 
   return (
-    <article className="book">
+    <article className="book" onMouseOver={() => {
+      console.log(title);
+    }}>
       <img src={img} alt="" />
       {/* Here the JavaScript variable is referred inside the curly braces in the h1 tag */}
       <h1 onClick={() => console.log(title)}>{title}</h1>
