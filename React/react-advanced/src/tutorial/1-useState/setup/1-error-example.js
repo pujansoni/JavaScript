@@ -5,6 +5,7 @@ const ErrorExample = () => {
   const handleClick = () => {
     title = "hello people";
     console.log(title);
+    // Here after changing the title onClick there's no way to change the h2 tag to re-render and show the updated title value, which we can change by using the useState function
   };
   return (<React.Fragment>
       <h2>{title}</h2>
