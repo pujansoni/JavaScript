@@ -15,6 +15,7 @@ const UseStateCounter = () => {
       
       // So here we will use the functional approach so instead of passing in the value directly we will use the functional approach as shown below
       // So here the setValue() will contain the most recent value. Whatever we return from this function will be the new value
+      // It is mandatory to return the state value from this functional approach
       setValue((prevState) => {
         return prevState + 1;
       }); 
