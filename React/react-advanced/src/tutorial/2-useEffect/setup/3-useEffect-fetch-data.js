@@ -17,7 +17,7 @@ const UseEffectFetchData = () => {
   };
 
   useEffect(() => {
-    // We can not use async-await in the useEffect as it return Promise object. We can setup the async-await inside the useEffect callback function or in a separate function
+    // We can not use async-await in the useEffect as it return Promise object and the useEffect() return is used to return the cleanup function. We can setup the async-await inside the useEffect callback function or in a separate function
     getUsers();
   }, []);
 

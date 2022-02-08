@@ -34,7 +34,7 @@ export default UseStateBasics;
 
 // React Hooks conventions
 // The react hooks are prefixed using the work "use"
-// Moreover, the compoenents where we invoke these hooks must be in uppercase i.e. UseStateBasics in the above example
+// Moreover, the components where we invoke these hooks must be in uppercase i.e. UseStateBasics in the above example
 // The hook itself must in the function/component body 
 // i.e. const [text, setText] = useState('random title'); in this case
 // We cannot call the hooks conditionally. It includes all the custom hooks and the hooks provided by react. We will see this later on in the useEffect React hook
