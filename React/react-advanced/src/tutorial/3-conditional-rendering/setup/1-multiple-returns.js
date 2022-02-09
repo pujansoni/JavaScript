@@ -12,8 +12,16 @@ const MultipleReturns = () => {
 
   useEffect(() => {
     // Here in the fetch() method we are overriding the user by using the setUser() method and setting the user. After setting up the user we will setIsLoading(false) as now we have our user. So after the first re-render the useEffect() will be executed once and the name of the user will be displayed instead of Loading
-    
-    fetch(url).then((resp) => resp.json()).then((user) => {
+    // Here the catch method will only catch the network errors and it won't catch the HTTP errors. So when we are getting the json, before that we will check the status of our response i.e. it won't trigger the error if the status is 404 that is no user
+    fetch(url).then((resp) => {
+      if(resp.status >= 200 && resp.status <= 299) {
+        return resp.json();
+      } else {
+        setIsLoading(false);
+        setIsError(true);
+        throw new Error(resp.statusText);
+      }
+    }).then((user) => {
       const {login} = user;
       setUser(login);
       setIsLoading(false);
