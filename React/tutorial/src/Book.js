@@ -36,7 +36,7 @@ const Book = (props) => {
       {/* Here we can also use the JavaScript methods as given below:
         <h4>{author.toUpperCase()}</h4>
       */}
-      {/* The JavaScript code inside the JSX must return a value/expression and it shouls not return the statement so the code below will generate an error:
+      {/* The JavaScript code inside the JSX must return a value/expression and it should not return the statement so the code below will generate an error:
         <p>{let x = 6}</p>
         However, the line given below will work:
         <p>{6+6}</p>
