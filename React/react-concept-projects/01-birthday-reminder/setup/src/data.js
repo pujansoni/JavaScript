@@ -1,3 +1,4 @@
+// This is also one way to setup an export here we are using the default export and for the named export we will not be using this syntax
 export default [
   {
     id: 1,
