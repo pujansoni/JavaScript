@@ -6,6 +6,8 @@ const udemy = 'udemy';
 
 const letters = [...udemy];
 
+console.log(letters);
+
 const boys = ['john', 'peter', 'bob'];
 const girls = ['susan', 'anna'];
 
