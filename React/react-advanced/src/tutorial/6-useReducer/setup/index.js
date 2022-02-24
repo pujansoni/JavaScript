@@ -2,6 +2,8 @@ import React, { useState, useReducer } from 'react';
 import Modal from './Modal';
 import { data } from '../../../data';
 // reducer function
+import {reducer} from './reducer';
+
 // The useReducer function is used when we have a more complicated setup. It will add more structure to the state
 // Lot of the functionality of the useReducer is same as that of the redux
 
@@ -43,45 +45,6 @@ const Index1 = () => {
 // Refactoring the above component to useReducer
 // Here we will refactor the above component to use the useReducer
 // Here we will remove the people and showModal useState
-
-// Here the state is the old state and the action is the action that the reducer will take and it will return a new state
-const reducer = (state, action) => {
-  if(action.type === "ADD_ITEM") {
-    const newPeople = [...state.people, action.payload];
-    return {
-      ...state, 
-      people:newPeople, 
-      isModalOpen:true, 
-      modalContent:"item added"
-    };
-  }
-
-  // Here if we didn't add any item then we will just retain the old state by destructing the old state and prompt the user by showing the message "please enter value"
-  if(action.type === "NO_VALUE") {
-    return {
-      ...state,
-      isModalOpen:true,
-      modalContent:"please enter value"
-    };
-  }
-
-  if(action.type === "CLOSE_MODAL") {
-    return {
-      ...state,
-      isModalOpen:false
-    };
-  }
-
-  if(action.type === "REMOVE_ITEM") {
-    const newPeople = state.people.filter((person) => person.id !== action.payload);
-    return {
-      ...state,
-      people: newPeople
-    };
-  }
-
-  throw new Error ("no matching action type");
-};
 
 const defaultState = {
   people: [],
