@@ -7,6 +7,8 @@ const url = 'https://course-api.com/javascript-store-products'
 
 // every time props or state changes, component re-renders
 
+// Please note that react is fast by default
+
 const Index = () => {
   const { products } = useFetch(url)
   const [count, setCount] = useState(0)
@@ -22,7 +24,8 @@ const Index = () => {
   )
 }
 
-const BigList = ({ products }) => {
+// Here memo is our function and will wrap the logic of the component in the memo. Here the memo is memoizing the values i.e. if the prop value is not changed then we are not triggering the re-render 
+const BigList = React.memo(({ products }) => {
   return (
     <section className='products'>
       {products.map((product) => {
@@ -30,7 +33,7 @@ const BigList = ({ products }) => {
       })}
     </section>
   )
-}
+});
 
 const SingleProduct = ({ fields }) => {
   let { name, price } = fields
