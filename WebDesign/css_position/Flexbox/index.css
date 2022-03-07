@@ -24,7 +24,7 @@
   align-items: flex-end; */
 
   /* The flex-wrap: nowrap property is set by default which allows only one row or one column container along the main axis i.e. no matter the item swe have in our container they will all be accumulated to one row/one column. But if we change it to wrap and give each item the width(shown below) then if it doesn't have the room to fit the next item then it fits that item in the next line */
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
 }
 
 /* There are many cases where justify-content values won't work and we want to customize the position of each items in the flexbox container */
@@ -57,6 +57,23 @@
 } */
 
 /* We can also wrap each items in the flex box as given below */
-.container > div {
+/* .container > div {
   width: 300px;
+} */
+
+/* As mentinoed before, flex is shorthand for three other properties i.e. flex-grow, flex-shrink, flex-basis */
+.home {
+  /* flex: 1; */
+  /* Here flex: 1 is also shorthand for - flex: 1 1 0 i.e. flex-grow: 1; flex-shrink: 1; flex-basis: 0; */
+  /* flex-grow decides how much of the extra space should be distributed to the various items */
+  flex-grow: 0;
+  /* flex-shrink: 1;  */
+  /* flex-basis is the way of setting the base width of the element */
+  flex-basis: 200px;
+}
+
+.logout {
+  /* Here the logout will take all the remaining space. If we set flex-grow on both home and logout to zero then we have space remaining. If we have home flex-grow: 1 and logout flex-grow: 2 then the flex-grow logout will grow twice as fast compare to the home */
+  flex-grow: 1;
+  flex-basis: 200px;
 }
