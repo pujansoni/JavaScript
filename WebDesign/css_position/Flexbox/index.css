@@ -92,12 +92,12 @@
   order: 0;
 } */
 
-.search {
+/* .search {
   flex: 1;
-}
+} */
 
 /* Here we want the container to wrap and allow two items instead of four on each of the two rows */
-@media all and (max-width: 600px) {
+/* @media all and (max-width: 600px) {
   .container {
     flex-wrap: wrap;
   }
@@ -119,4 +119,4 @@
   .search {
     order: 1;
   }
-}
+} */
