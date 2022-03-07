@@ -9,6 +9,15 @@
   /* justify-content controls the content along the main axis. It can take a range of different values. By default it's set to flex-start i.e. the content is squeezed to the start of the main axis */
   /* justify-content: space-evenly; */
   /* Other justify-content values: flex-end center space-around space-between space-evenly */
+
+  /* Here by giving the height 100% to the container we can make the height of the flex items responsive, but we need to make sure that the height of the <html> and the <body> element is also 100% */
+  height: 100%;
+  /* The align-items controls the items in the cross axis */
+  align-items: center;
+  /* Note: Flexbox are great for aligning the items to the center of the container. All we need to do is make sure both of the properties below are present:border:
+  align-items: center;
+  justify-content: center;
+  */
 }
 
 /* There are many cases where justify-content values won't work and we want to customize the position of each items in the flexbox container */
@@ -23,11 +32,19 @@
 /* To grow and shrink all the items in the container to make it responsive we will target all the items as shown below */
 /* If we were to remove the flex: 1 property on all the items then all the items will be fixed */
 /* Flex is shorthand for three other properties i.e. flex-grow, flex-shrink, flex-basis */
-.container > div {
+/* .container > div {
   flex: 1;
-}
+} */
 
 /* If we want the search div to be twice as large compare to the other items then we will target the search div and set the value of flex to 2. Here please note that directly accessing the .search class won't work as using the container and selecing the search class is more specific and that's how CSS works */
-.container > .search {
+/* .container > .search {
   flex: 2;
+} */
+
+/* We can also target individual items on the cross axis as given below */
+.logout {
+  align-self: flex-start;
+}
+.home {
+  align-self: flex-end;
 }
