@@ -80,14 +80,43 @@
   flex-basis: 200px;
 } */
 
-.item1 {
+/* .item1 {
   order: 2;
-}
+} */
 
 /* We can also change the order of the flex-items by using the order property. By default the value of the order is zero. If we set the value of the item above 1 then they are placed after the other items while the negative order value will place the corresponding item before the other items */
-.item2 {
+/* .item2 {
   order: 0;
 }
 .item3 {
   order: 0;
+} */
+
+.search {
+  flex: 1;
+}
+
+/* Here we want the container to wrap and allow two items instead of four on each of the two rows */
+@media all and (max-width: 600px) {
+  .container {
+    flex-wrap: wrap;
+  }
+
+  .container > li {
+    flex: 1 1 50%;
+  }
+
+  .search > input {
+    text-align: center;
+  }
+}
+
+@media all and (max-width: 400px) {
+  .container > li {
+    flex: 1 1 100%;
+  }
+
+  .search {
+    order: 1;
+  }
 }
