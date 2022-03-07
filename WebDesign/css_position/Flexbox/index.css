@@ -1,0 +1,33 @@
+.container {
+  border: 5px solid #ffcc5c;
+  /* Here when we use the flex option it will align the items horizontally by default going form left to right */
+  /* A flexbox container always has a direction and by default this direction is horizontal i.e. the main axis which goes from left to right along the row. There's a cross axis which goes from top to bottom. We use CSS to position elements. We can make a flex container by using the property - display: flex */
+  display: flex;
+  /* We can also flip the direction of the flexbox container by setting up: flex-direction: column
+  The default option is: flex-direction: row */
+  flex-direction: row;
+  /* justify-content controls the content along the main axis. It can take a range of different values. By default it's set to flex-start i.e. the content is squeezed to the start of the main axis */
+  /* justify-content: space-evenly; */
+  /* Other justify-content values: flex-end center space-around space-between space-evenly */
+}
+
+/* There are many cases where justify-content values won't work and we want to customize the position of each items in the flexbox container */
+/* .logout {
+  margin-left: auto;
+} */
+/* If we want both the search and the logout to be on the right we will target the search class as shown below */
+/* .search {
+  margin-left: auto;
+} */
+
+/* To grow and shrink all the items in the container to make it responsive we will target all the items as shown below */
+/* If we were to remove the flex: 1 property on all the items then all the items will be fixed */
+/* Flex is shorthand for three other properties i.e. flex-grow, flex-shrink, flex-basis */
+.container > div {
+  flex: 1;
+}
+
+/* If we want the search div to be twice as large compare to the other items then we will target the search div and set the value of flex to 2. Here please note that directly accessing the .search class won't work as using the container and selecing the search class is more specific and that's how CSS works */
+.container > .search {
+  flex: 2;
+}
