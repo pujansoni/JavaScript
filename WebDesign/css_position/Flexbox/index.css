@@ -67,13 +67,15 @@
   /* Here flex: 1 is also shorthand for - flex: 1 1 0 i.e. flex-grow: 1; flex-shrink: 1; flex-basis: 0; */
   /* flex-grow decides how much of the extra space should be distributed to the various items */
   flex-grow: 0;
-  /* flex-shrink: 1;  */
+  /* The flex-shrink property will shrink the elements and the default value of the flex-shrink is set to 1 for all the items while the default value of flex-grow is 0. Here if we have flex-shrink: 0 for home and flex-shrink: 1 for logout then after the container shrinks and crosses the 400px threshold then only the logout will shrink and the home will not shrink */
+  flex-shrink: 0;
   /* flex-basis is the way of setting the base width of the element */
   flex-basis: 200px;
 }
 
 .logout {
   /* Here the logout will take all the remaining space. If we set flex-grow on both home and logout to zero then we have space remaining. If we have home flex-grow: 1 and logout flex-grow: 2 then the flex-grow logout will grow twice as fast compare to the home */
-  flex-grow: 1;
+  flex-grow: 0;
+  flex-shrink: 1;
   flex-basis: 200px;
 }
