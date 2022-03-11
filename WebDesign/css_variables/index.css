@@ -20,7 +20,9 @@ p {
   color: var(--red);
 }
 
+/* We can also override the CSS variable. Here note that all the elements that inherit the item class in the DOM also gets the updated red variable value */
 .item {
+  --red: #ff8e69;
   background: var(--yellow);
 }
 
