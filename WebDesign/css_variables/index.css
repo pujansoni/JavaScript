@@ -16,17 +16,25 @@ p {
   color: var(--red);
 }
 
-#navbar a {
-  color: var(--red);
+/* Creating the local variable for particular section in html */
+#navbar {
+  --nav-red: #ff6f19;
 }
 
-/* We can also override the CSS variable. Here note that all the elements that inherit the item class in the DOM also gets the updated red variable value */
+/* Accessing the local --nav-red variable. This local variable is not available outside the navbar id */
+#navbar a {
+  color: var(--nav-red);
+}
+
+/* We can also override the CSS variable. Here note that all the elements that inherit the item class in the DOM also gets the updated red variable value. Here we are also creating a local --item-yellow variable */
 .item {
+  /* The --item-yellow variable is also available to the button as well as the button resides inside the item and has access to the local variables defined in the item */
+  --item-yellow: #fffc5d;
   --red: #ff8e69;
-  background: var(--yellow);
+  background: var(--item-yellow);
 }
 
 button {
   background: var(--red);
-  color: var(--yellow);
+  color: var(--item-yellow);
 }
