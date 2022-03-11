@@ -1,9 +1,18 @@
 /* This will point to the root of the document that it the html element and the variable will be available throughout the entire app. It's also known as global variable */
+
+/* Variable declarations */
+
 :root {
   --beige: #ffeead;
   --yellow: #ffcc5c;
   --red: #ff6f69;
 }
+
+.grid {
+  --columns: 200px 200px;
+}
+
+/* Styles */
 
 html,
 body {
@@ -26,6 +35,14 @@ p {
   color: var(--nav-red);
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: var(--columns);
+  grid-auto-rows: 140px;
+  grid-gap: 20px;
+  justify-content: center;
+}
+
 /* We can also override the CSS variable. Here note that all the elements that inherit the item class in the DOM also gets the updated red variable value. Here we are also creating a local --item-yellow variable */
 .item {
   /* The --item-yellow variable is also available to the button as well as the button resides inside the item and has access to the local variables defined in the item */
@@ -44,4 +61,17 @@ button {
   /* So for example the h1 element declared inside the featured class will use the updated red value defined here */
   --yello: #ffe55b;
   --red: #ff5564;
+}
+
+/* CSS variables resides in the DOM which means thate we can update those with the use of JavaScript as well */
+
+@media all and (max-width: 550px) {
+  /* Here we are reducing the columns to one when we minimize the screen */
+  .grid {
+    --columns: 200px;
+  }
+
+  :root {
+    --beige: #fffeead;
+  }
 }
