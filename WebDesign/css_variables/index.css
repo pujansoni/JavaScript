@@ -38,3 +38,10 @@ button {
   background: var(--red);
   color: var(--item-yellow);
 }
+
+.featured {
+  /* Here in the featured class is targeted and we can make it stand out from the other items by overriding the value of the css variables so the corresponding html elements using this class uses these updated css variables */
+  /* So for example the h1 element declared inside the featured class will use the updated red value defined here */
+  --yello: #ffe55b;
+  --red: #ff5564;
+}
