@@ -1,5 +1,6 @@
 // The useDispatch function is used to send the unique action to the redux store
 import {useSelector, useDispatch} from 'react-redux'
+import {actions} from './store/index'
 
 function App() {
   // Here form the useSelector we will extract the counter that is available in the store/index.js file
@@ -8,13 +9,13 @@ function App() {
 
   const increment = () => {
     // Here we need to dispatch the action whenever we want to send the data to the redux store
-    dispatch({type: "INC"})
+    dispatch(actions.increment())
   }
   const decrement = () => {
-    dispatch({type: "DEC"})
+    dispatch(actions.decrement())
   }
   const addBy = () => {
-    dispatch({type: "ADD", payload: 10})
+    dispatch(actions.addBy(10))
   }
   return (
     <div>

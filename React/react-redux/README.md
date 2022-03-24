@@ -14,3 +14,6 @@ npm install redux react-redux
 Here in this project we will create the index.js file inside the store directory in src folder in which we will handle all the state used in the project
 
 The syntax of the state used in the redux is similar to the useReducer
+
+To import the redux toolkit in an existing app, the command is:
+npm install @reduxjs/toolkit
