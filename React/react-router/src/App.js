@@ -7,6 +7,7 @@ import SharedLayout from './pages/SharedLayout';
 import SingleProduct from './pages/SingleProduct';
 
 function App() {
+  const [user, setUser] = useState(null);
   return (
     <BrowserRouter>
       <Routes>
