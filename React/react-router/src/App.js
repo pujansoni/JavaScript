@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import { useState } from 'react';
 import ProtectedRoute from './pages/ProtectedRoute';
+import SharedProductLayout from './pages/SharedProductLayout';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -24,8 +25,10 @@ function App() {
             <h2>testing</h2>
           </div>} /> */}
           <Route path="about" element={<About />} />
-          <Route path="products" element={<Products />} />
-          <Route path="products/:productId" element={<SingleProduct />} />
+          <Route path="products" element={<SharedProductLayout />} >
+            <Route index element={<Products />} />
+            <Route path=":productId" element={<SingleProduct />} />
+          </Route>
           <Route path="login" element={<Login setUser={setUser}></Login>} />
           {/* Here we are setting up the dashboard as a protected route */}
           <Route 
