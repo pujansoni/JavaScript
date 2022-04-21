@@ -1,0 +1,8 @@
+MERN - Mongo, Express, React, Node
+
+NoSQL database
+Mongo: Object -> collections -> documents -> data
+
+Express is the web server
+React Front End
+Node Base server
