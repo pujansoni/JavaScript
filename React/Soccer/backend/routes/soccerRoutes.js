@@ -18,7 +18,7 @@ const routes = (app) => {
     // Updating the player
         .put(UpdatePlayer)
     // Deleting the player
-    .delete(deletePlayer);
+        .delete(deletePlayer);
 }
 
 export default routes;
