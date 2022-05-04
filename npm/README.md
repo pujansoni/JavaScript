@@ -85,3 +85,6 @@ Here what this command will temporary install the package specified after the -p
 npx -p @angular/cli ng new myapp
 
 To know more about npx we can visit the link: www.npmjs.com/package/npx
+
+To check the locally installed modules we can use the command: npm ls
+To check the globally installed modules we can use the command: npm ls -g
