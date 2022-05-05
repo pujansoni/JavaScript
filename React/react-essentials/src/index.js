@@ -22,14 +22,21 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 // );
 
 /* JSX, JavaScript as XML is a language extension that allows us to write tags directly into JavaScript */
+
+// function AppTwo() {
+//   return (
+//     <h1>This is the Second App</h1>
+//   );
+// }
+
+// Here by using <React.Fragment></React.Fragment> to wrap our components but it won't show up on the HTML side as it acts as a wrapper for our components. Alternatively, we can also use a shorter syntax <></>
+// root.render(
+//   <>
+//     <App />
+//     <AppTwo />
+//   </>
+// );
+
 root.render(
-  <ul>
-    <li>Monday</li>
-    <li>Tuesday</li>
-    <li>Wednesday</li>
-    <li>Thursday</li>
-    <li>Friday</li>
-    <li>Saturday</li>
-    <li>Sunday</li>
-  </ul>
+  <App />
 );
