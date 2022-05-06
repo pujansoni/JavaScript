@@ -37,6 +37,10 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 //   </>
 // );
 
+// const [,, light] = ["boots", "tent", "headlamp"];
+
+// console.log(light);
+
 root.render(
-  <App authorized={true} />
+  <App />
 );
