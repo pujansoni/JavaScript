@@ -552,3 +552,288 @@ Identify **two trusted groups** within the project and give the password to one 
 AWS uses API's for the internal communication protocol. So when you interact with any of the services through SDK or AWS CLI or through the management console they use backend API's to communicate.
 
 When once configured CloudTrail will record all or selected API interactions and stores them in an S3 Bucket, **it records details of API caller, which includes IP address, time etc**.
+
+### Accessing CloudTrail through CLI
+
+\*\*AWS CLI is an open source tool built on top of the AWS SDK for Python (Boto) that provides commands for interacting with AWS services.
+
+First, you need to install AWS CLI on your device the installation process can be found in the AWS CLI documentation
+
+**Lets check some basic commands used for CloudTrail**:
+
+1. To create a new trail:
+
+```
+aws cloudtrail create-trail --name trailName --s3-bucket-name BucketName --is-multi-region-trail.
+```
+
+2. To delete a trail:
+
+```
+aws cloudtrail delete-trail --name trail
+```
+
+3. To get the complete info of a trail:
+
+```
+aws cloudtrail get-trail-status --name Trail1
+```
+
+### Basic Functionality of IAM
+
+**So, Now you have a brief knowledge of what is IAM, let's dive deep into it further**.
+
+IAM does two primary functions, one is to **authenticate** the user by validating the username and password and other is **authorizing** the user, which validates the actions that a user can perform in any of the services in the cloud.
+
+These are very much useful to restrict unauthorized access to services and also grant a temporary access to any resource with **secure access token** service.
+
+AWS IAM supports identity federation. so, if you already manage users external to AWS, using something like an on-premises Active Directory configuration, you can map Active Directory identities to IAM users.
+
+### IAM Features
+
+Some of the important features provided by IAM are:
+
+- It is a Free service
+- Shared access to your AWS account
+- Granular Permissions: Giving different permissions to different people to different AWS resources
+- Multi-Factor Authentication(MFA) to users
+- Identity Federation - allowing users to access AWS services(temporary) having accounts elsewhere
+- Identity information for assurance
+- Setting up your own password policy
+
+### Who is the User?
+
+An Organization's AWS account is used by various persons for various purposes, so sharing your **root user credentials** involves a very high amount of risk, and also some may need only access to storage, other to compute, some to database. So, in order to satisfy all these needs we have **IAM user**.
+
+**An IAM user is a user within your root account having a separate login and password and also can be restricted to use only resources which are required**.
+
+Also, a user can have his own secret access key which can be used to configure CLI.
+
+### What are IAM groups?
+
+Now, if you want to set some same permissions to a number of users, how would you do that?
+
+For this purpose we have **IAM Groups**.
+
+Groups are defined as the **collection of IAM users**. These groups helps in managing permissions to all users rather than to a single user through access control policies.
+
+A single user can be part of any number of groups.
+
+### What is an IAM Policy?
+
+**IAM Policies are important tools used for restricting or giving access to a resources in the AWS**. When a request is made by the user, AWS evaluates these policies and decide whether to allow or deny the request. They are applied to users, groups, and roles.
+
+**AWS provides many predefined policies which perform a particular action and if needed you can define your own custom policy**. These policies are stored in JSON format.
+
+### Types of Policies
+
+There are four types of policies that are generally used in AWS they are:
+
+1. **Identity-based policy**: These are AWS managed and custom defined policies that are attached to AWS users, groups, and roles
+2. **Resource-based Policies**: These are custom policies attached to resources, examples of resource based policies are S3 bucket policy and IAM role trust policy
+3. **Organizations SCPs**: These use an AWS Organizations service control policy (SCP) to apply a permissions boundary to an Organization Unit(OU)
+4. **Access Control List**: These are similar to Resource-based policy, but this doesn't use a JSON policy document Structure
+
+### Accessing IAM through AWS CLI
+
+IAM provides the facility to access its major services through the **AWS CLI**:
+
+1. Create a new IAM user:
+
+```
+aws iam create-user --user-name NAME.
+```
+
+2. To create a login password:
+
+```
+aws iam create-login-profile --user-name NAME --password PASSWORD.
+```
+
+3. To delete an existing user:
+
+```
+aws iam delete-user --user-name NAME
+```
+
+4. To attach a policy to a user:
+
+```
+aws iam attach-user-policy --policy-arn arn:aws:iam: :aws:policy/POLICYNAME --user-name NAME
+```
+
+5. To create Group:
+
+```
+aws iam create-group --group-name GROUPNAME
+```
+
+6. To add users to an existing group:
+
+```
+aws iam add-user-to-group --user-name NAME --group-name GROUPNAME
+```
+
+7. To attach a policy to a group
+
+```
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/POLICYNAME --group-name GROUPNAME
+```
+
+8. To get complete details about an attached policy:
+
+```
+aws iam get-policy --policy-arn arn:aws:iam::123456789012:policy/POLICY
+```
+
+## AWS Managed Policies vs Inline Policy
+
+There are many policies predefined already by the AWS, which gets updated frequently and also they are very easy for beginners to create and attach a policy can be reused
+
+**Inline or custom policies** are useful if you want to maintain a strict one-to-one relationship between a policy and the entity that it's applied to
+
+### Elements in IAM Policy JSON
+
+1. **Version** - Specify the version of the policy language that you want to use. As a best practice, use the latest 2012-10-17 version
+
+2. **Statement** - Use the main policy element as a container for the following elements. You can include more than one statement in a policy
+
+3. **Sid** - Include an optional statement ID to differentiate between your statements
+
+4. **Effect** - Use Allow or Deny to indicate whether the policy allows or denies access
+
+5. **Principal** - Indicate the account, user, role, or federated user to which you would like to allow or deny access. If you are creating a policy to attach to a user or role, you cannot include this element. The principal is implied as that user or role
+
+6. **Action** - Include a list of actions that the policy allows or denies
+
+7. **Resource** - Specify a list of resources to which the actions apply
+
+8. **Condition(Optional)** - Specify the circumstances under which the policy grants permission
+
+## What is an IAM Role?
+
+**IAM roles are similar to users, they can be used to grant consistent permissions to users and machines(services)**. These roles instead of being uniquely associated with one person, intended to be assumable by anyone who needs it.
+
+**Roles do not have any security credentials associated with** but if a user assumes a role temporary security credentials are provided to the user.
+
+You can use roles to delegate access to users, applications, or services that don't normally have access to your AWS resources, like people having accounts in other AWS account, allow mobile app to use AWS resource, to people having access outside AWS in your corporate directory.
+
+You can also configure AWSCLI to use a role by creating a profile for the role in ~/.aws/config.
+
+### IAM Role Concepts
+
+1. **AWS Service Role**: This is the general role which a service assumes and performs actions on other services on your behalf, these service roles vary from service to service, Service roles provide access to resources only in your account
+
+2. **AWS Service Linked Role**: This is a unique type of service role that is linked to a service directly. These are predefined by the service and have all permissions to perform the action on other resources in AWS
+
+3. **Role Chaining**: This Role Chaining occurs when you try to use a role to assume the second role through AWS CLI or API. For example, assume that a User has permission to assume Role1 and Role2 and Role1 has permission to assume Role2. You can assume Role1 by using User's long-term user credentials in the AssumeRole API operation. This operation returns Role1's short-term credentials. To engage in role chaining, you can use Role1's short-term credentials to assume Role2. Generally this is used in cross-account access or federation
+
+4. **Delegation**: This is **granting permissions to access resources that you control**, it involves setting up a trust between the account that owns the resource and account or users that want to access resources. To delegate permission to access a resource, you create an IAM role in the trusting account that has two policies attached. The permissions policy grants the user of the role the needed permissions to carry out the intended tasks on the resource. The trust policy specifies which trusted account members are allowed to assume the role
+
+5. **Federation**: This is creation of Trust between AWS and other identity service providers such as Facebook, Google, or any other idp that is compatible with OpenID Connect(OIDC), and users also can login with enterprise login which is compatible with SAML2.0.
+
+6. **Permissions Boundary**: This feature can limit a role to have a particular number of resources, these can't be applied to Service linked roles
+
+### Accessing IAM Roles through CLI
+
+Let us look into some basic CLI commands that are very much useful in dealing with roles
+
+1. To create an IAM Role:
+
+```
+aws iam create-role --role-name <Test-Role> --assume-role-policy-document file://Test-Role-Trust-Policy.json
+```
+
+2. Attach a policy to a role:
+
+```
+aws iam attach-role-policy --role-name <test-role> --policy-arn <Value>.
+```
+
+3. To delete a role:
+
+```
+aws iam delete-role --role-name <test-role>
+```
+
+4. To update attached Role policy:
+
+```
+aws iam update-assume-role-policy --role-name <test-role> --policy-document file://Test-Role-Trust-Policy.json
+```
+
+## Temporary Security Credentials
+
+**Temporary Security Credentials** are used to gain access to the AWS resources by the trusted users. These are similar to the long term **Access key and Secret Access Key**, as name implies they can be restricted to last the particular period of time, once expired they will not be used to gain access to AWS resources.
+
+Temporary Security Credentials will not be stored with user they are created dynamically when requested, once they are expired users can request them again until they have the access to request.
+
+These are basis of **identity federation** and **Amazon Cognito** services.
+
+### AWS Security Token Service
+
+**Security Token Service(STS)** is a web service that enables IAM users or federated users to request the temporary security credentials.
+
+STS is a global service having endpoint at https://sts.amazonaws.com, you can make STS API calls to your nearby supported region which can reduce latency irrespective of region they work globally.
+
+### STS use cases
+
+**Identity Federation**:
+
+You can manage your user identities in an external system outside of AWS and grant users who sign in from those systems access to perform AWS tasks and access your AWS resources. This is of two types:
+
+1. **Enterprise Identity Federation**: In this, you can authenticate users in your corporate directory without creating new AWS identity for them. This is known as the single sign-on (SSO) approach to temporary access. AWS STS supports open standards like Security Assertion Markup Language (SAML) 2.0.
+
+2. **Web Identity Federation**: This can be used to let users login with any well known third party identity providers such as **Facebook, Google, Amazon** etc or any Open I.D connect(OIDC) compatible providers. You can exchange the credentials from that provider for temporary permissions to use resources in your AWS account.
+
+**Roles for cross Account Access**:
+
+Using roles and cross-account access, you can define user identities in one account, and use those identities to access AWS resources in other accounts that belong to your organization.
+
+## Cross Account Role Access
+
+One amazing property of IAM Roles is that we can access the resources in one AWS account without having access to that, but having a user account in other AWS account, which is called as **Cross Account Role Access**.
+
+This is very much used when your project has multiple accounts (say development and production) and some users at times need access to other accounts resources or even some third party account needs to access your resources etc.
+
+### Web Identity Federation
+
+You are a developer and you own a mobile app or a website which uses AWS resources, the end user can perform actions in your AWS resources (say s3 for storing some files or images) without having an IAM user account.
+
+This is made possible by allowing users federated by the specified external web identity or OpenID Connect (OIDC) provider to assume this role.
+
+AWS IAM now supports Facebook, Google, Amazon and any open ID Connect providers for authentication.
+
+You need to have a basic idea of Developer functions in respective providers for setting up web identity federation using the providers.
+
+### Amazon Cognito provides Web Identity Federation with the following features:
+
+- Sign-up and sign-in to your apps
+- Access for guest users
+- Acts as an Identity Broker between your application and Web ID providers, so you don't need to write any additional code
+- Synchronize user data for multiple devices
+- Recommended for all mobile applications AWS services
+
+Cognito brokers between the app and Facebook/Google to provide temporary credentials which map to an IAM role allowing access to the required resources. No need for the application to embed or store AWS credentials locally on the device and it gives users a seamless experience across all mobile devices.
+
+User Pools are user directories used to manage sign-up and sign-in functionality for mobile and web applications. Users can sign-in directly to the User Pool, or using Facebook, Amazon, or Google. Cognito acts as an Identity Broker between the identity provider and AWS. Successful authentication generates a JSON Web token (JWTs).
+
+Identity Pools enable provide temporary AWS credentialsto access AWS services like S3 or DynamoDB
+
+User Pools are all about usernames, passwords, and that sort of thing. Identity Pools are actual granting of authentication to the AWS Resources
+
+![User Pools v/s Identity Pools](./resource/13.png)
+
+Cognito tracks the association between user identity and the various different devices they sign-in from. In order to provide a seamless user experience for your application, Cognito uses Push Synchronization to push updates and synchronize user data across multiple devices. Cognito uses SNS to send a notification to all the devices associated with a given user identity whenever data stored in the cloud changes.
+
+![Push Synchronization](./resource/14.png)
+
+### AWS Cognito Summary
+
+- Federation allows user to authenticate with a Web Identity Provider (Google, Facebook, Amazon)
+- The user authenticates first with the Web ID Provider and receives an authentication toke, which is exchanged for temporary AWS credentials allowing them to assume an IAM role
+- Cognito is an Identity Broker which handles interaction between your applications and the Web ID provider (You don't need to write your own code to do this.)
+- User pool is user based. It handles things like user registration, authentication, and account recovery
+- Identity pools authorize access to your AWS resources
+
+## SAML 2.0 Federation
