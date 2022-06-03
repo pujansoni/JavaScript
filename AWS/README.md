@@ -837,3 +837,22 @@ Cognito tracks the association between user identity and the various different d
 - Identity pools authorize access to your AWS resources
 
 ## SAML 2.0 Federation
+
+**Security Assertion Markup Language 2.0(SAML 2.0)** is a version of SAML for exchanging authentication and authorization data between security domains. It is an XML based protocol that uses security tokens containing assertions passing information about the principle(user), many large organizations, government agencies have opted for SAML as standard protocol for the communication identities
+
+**AWS Supports Identity Federation with SAML2.0**. This feature enables federated single sign-on(SSO), so users can log into the AWS Management Console or call the AWS API operations without you having to create an IAM user for everyone in your organization
+
+## IAM Best Practices by AWS
+
+The Best practices for a secure environment are:
+
+- Never use the root account for day to day activity
+- Lockdown root account access keys and enable MFA always
+- Use AWS defined Policies to assign permissions
+- Assign permissions at group/role level rather than user level
+- Grant Least Privilege
+- Configure a strong password policy for IAM Users
+- Use IAM roles for custome applications running on AWS EC2
+- Remove unused, stale, or unnecessary IAM users/credentials
+- Use Policy conditions if high sensitive information is involved
+- Monitor user activity in all services through management tools
