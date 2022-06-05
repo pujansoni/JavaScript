@@ -95,3 +95,9 @@ setTimeout(() => {
 }, 0);
 console.log('next task');
 ```
+
+![Request/Response](./resources/2.png)
+
+![HttpRequest/HttpResponse](./resources/3.png)
+
+![HttpMethods](./resources/4.png)
