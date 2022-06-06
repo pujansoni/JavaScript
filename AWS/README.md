@@ -881,6 +881,19 @@ There are a huge number of ways that AWS Lambda is used by businesses, some of t
 2. AWS Lambda is used to analyze social media data
    **Ex**: Social data is added into Amazon Kinesis --> AWS Lambda is triggered --> The data is stored into a database which can be used by business users
 
+- It Supports small specific functions
+- Light weight execution engine for a single function
+
+- It has two execution methods: Request/Response (Used when a response is expected from a request. Ex: AWS API Gateway), Event(Used when functions are performed based on triggered events. Ex: Amazon S3, AWS DynamoDB)
+
+### AWS Lambda Integration with Other AWS Services
+
+![Integration with Other Services](./resource/lambda_3.png)
+
+### Traditional Stack v/s AWS Lambda Stack
+
+![Traditional Stack v/s AWS Lambda Stack](./resource/lambda_4.png)
+
 ## How does Lambda work?
 
 ![Lambda basics](./resource/lambda_1.png)
@@ -901,3 +914,29 @@ Now consider a situation where you have to set up a temporary storage system to 
 So here one of the buckets is the source (where the data is uploaded) and the other one is where the data is to be backed up
 
 This Lambda function is invoked every time there's an upload into the bucket. This data is then uploaded into the backup bucket
+
+## AWS Lambda - Pricing and Limits
+
+![AWS Lambda Pricing](./resource/lambda_5.png)
+
+## AWS Lambda - Difficulties
+
+![AWS Lambda Difficulties](./resource/lambda_6.png)
+
+# Amazon DynamoDB
+
+![What is DynamoDB](./resource/dynamodb_1.png)
+
+## Amazon DynamoDB Benefits
+
+![Amazon DynamoDB Benefits](./resource/dynamodb_2.png)
+
+## Amazon DynamoDB Characteristics
+
+![Read Consistency](./resource/dynamodb_3.png)
+
+![Provisioned Throughput Capacity](./resource/dynamodb_4.png)
+
+## AWS DynamoDB: Use Case
+
+![Use Case](./resource/dynamodb_5.png)
