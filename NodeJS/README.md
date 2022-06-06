@@ -101,3 +101,11 @@ console.log('next task');
 ![HttpRequest/HttpResponse](./resources/3.png)
 
 ![HttpMethods](./resources/4.png)
+
+## Express.js
+
+**API v/s SSR**
+
+- API - JSON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSR - Template
+- Send Data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Send Template
+- RES.JSON()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RES.RENDER()

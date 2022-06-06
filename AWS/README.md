@@ -856,3 +856,48 @@ The Best practices for a secure environment are:
 - Remove unused, stale, or unnecessary IAM users/credentials
 - Use Policy conditions if high sensitive information is involved
 - Monitor user activity in all services through management tools
+
+# AWS Lambda
+
+## Benefits of AWS Lambda
+
+1. **No worries about the server** - You don't require servers. All you need to do is write the code and upload it to Lambda. This means, we can stop worrying about provisioning and managing those servers! The only thing Lambda requires to work is our code!
+
+2. **Automatic Scaling** - Scaling is done automatically based on the size of the workload. It scales the application running the code in response to each trigger
+
+3. **Metering on the second** - You only pay for the amount of time that your code is running. Which means that you're not charged for any of the servers. The only payment required is for the amount of time the code is computed
+
+## What is AWS Lambda?
+
+AWS Lambda is one of the services that falls under the **Compute** domain of services that AWS provides. Lambda can be used to run code in response to certain events from other services
+
+Supports a number of prominent programming languages like Node.js, Java, C#, Python, GO, etc
+
+There are a huge number of ways that AWS Lambda is used by businesses, some of them are:
+
+1. AWS Lambda is used to process images when it's uploaded
+   **Ex**: Adding images into S3 bucket --> AWS Lambda is triggered --> The images are processed and converted into thumbnails based on the device
+
+2. AWS Lambda is used to analyze social media data
+   **Ex**: Social data is added into Amazon Kinesis --> AWS Lambda is triggered --> The data is stored into a database which can be used by business users
+
+## How does Lambda work?
+
+![Lambda basics](./resource/lambda_1.png)
+
+Here, these clients could be anyone who's sending requests to AWS Lambda. It could be an application or other Amazon services
+So these requests are given to a **container** to handle. A **container** contains the code the user has provided to satisfy the query
+
+> Container: A Container is a lightweight standalone executable package of a piece of software that includes everything needs to run it like the code, the runtime, the system tools, the system libraries, and any other settings required. Containerized software will always run the same regardless of the environment it's running on. A container isolate software from it's surrounding i.e. isolating the development environment from the production environment. This reduces chances of encountering an error
+
+With an increasing number of requests, an increasing number of containers are created. When the requests reduce, the number of containers reduce as well
+
+## Use Case - Backing up data
+
+Now consider a situation where you have to set up a temporary storage system to back up data as soon as it is uploaded.
+
+![Use Case](./resource/lambda_2.png)
+
+So here one of the buckets is the source (where the data is uploaded) and the other one is where the data is to be backed up
+
+This Lambda function is invoked every time there's an upload into the bucket. This data is then uploaded into the backup bucket
