@@ -8,10 +8,11 @@ const app = express();
 // setup static and middleware [Note: app.use() is used to setup the middleware]
 app.use(express.static('./public'));
 
-app.get('/', (req, res) => {
+// app.get('/', (req, res) => {
     // Here we are using the absolute path
-    res.sendFile(path.resolve(__dirname, './navbar-app/index.html'));
-});
+    // res.sendFile(path.resolve(__dirname, './navbar-app/index.html'));
+    // Here as index.html is also a static file, we can put the index.html in the public folder and it will work propertly. Moreover, if we can also use the template engines to render index.html files i.e. Server Side Rendering (SSR)
+// });
 
 app.all('*', (req, res) => {
     res.status(404).send('resource not found');
