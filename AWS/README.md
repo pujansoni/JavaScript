@@ -937,6 +937,49 @@ This Lambda function is invoked every time there's an upload into the bucket. Th
 
 ![Provisioned Throughput Capacity](./resource/dynamodb_4.png)
 
+**Amazon DynamoDB is:**
+
+- Highly available
+- Consistent, single digit millisecond latency at any scale
+- Fully managed
+- Secure
+- Integrates with AWS Lambda, Amazon Redshift, and more
+
 ## AWS DynamoDB: Use Case
 
 ![Use Case](./resource/dynamodb_5.png)
+
+## SQL v/s NoSQL
+
+### SQL
+
+- SQL stands for Structured Query Language. SQL database are scale vertically, that means we need to increase the capacity of single server (CPU, RAM, ROM) to scale your database
+
+### NoSQL
+
+- NoSQL stands for Not Only SQL or Not Only Strucuted Query Language. NoSQL database are scale horizontally, that means we can add more server to power up your database
+
+### Relational v/s Non Relational Database:
+
+![Relational v/s NonRelational](./resource/dynamodb_6.png)
+
+## OLAP v/s OLTP
+
+![OLAP v/s OLTP](./resource/dynamodb_7.png)
+
+## Data Types in AWS DynamoDB
+
+- String
+- Boolean, boolean
+- Byte, byte
+- Data (as ISO_8601) millisecond-precision string, shifted to UTC
+- Calendar (as ISO_8601) millisecond-precision string, shifted to UTC
+- Long, long
+- Integer, int
+- Double, double
+- Float
+- Big decimal, Big integer
+
+**DynamoDB Partition Key: This simple primary key consists of a single attribute referred to as the partition key**
+
+**DynamoDB Sort Key: It can be possible in DynamoDB table, 2 partition key is having the same value, to overcome this kind of problem, DynamoDB introduce sort key. It is possible for a table to have same partition key, in this case the combination of the PARTITION KEY & SORT KEY is known as COMPOSITE PRIMARY KEY**
