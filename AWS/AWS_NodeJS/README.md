@@ -141,6 +141,114 @@ async function fetchDataFromDatabaseGetMethod() {
         }
     };
 
+    let queryExecute = new Promise((res, rej) => {
+        dynamoDB.get(params, function(err, data) {
+            if(err) {
+                console.log("Error", err);
+                rej(err);
+            } else {
+                console.log("Success! get method fetch data from dynamodb");
+                res(JSON.stringify(data, null, 2));
+            }
+        });
+    });
 
+    const result = await queryExecute;
+    console.log(result);
+}
+```
+
+## DynamoDB - Fetching data with the Query method
+
+```
+async function fetchDataFromDatabaseQueryMethod() {
+    var id = "PL 23332231213";
+    var Dept = "HR";
+    var params = {
+        TableName: empTable,
+        KeyConditionExpression: "#id = :id", // This is only the primary key
+        ExpressionAttributeNames: {
+            "#id": "id",
+            "#dept": "Dept"
+        },
+        ExpressionAttributeValues: {
+            ":id": id,
+            ":deptValue": Dept
+        },
+        FilterExpression: "#dept = :deptValue", // AttributeName with AttributeValue
+        Limit: 1,
+        ScanIndexForward: false, // Set ScanIndexForward to false to display most recent entries first
+    };
+
+    let queryExecute = new Promise((res, rej) => {
+        dynamoDB.query(params, function(err, data) {
+            if(err) {
+                console.log("Error", err);
+                rej(err);
+            } else {
+                console.log("Success! query method fetch data from dynamoDB");
+                res(JSON.stringify(data, null, 2));
+            }
+        });
+    });
+    const result = await queryExecute;
+    console.log(result);
+}
+```
+
+## DynamoDB - Update Data
+
+```
+async function updateDataFromDatabase() { // update method fetch data from dynamodb
+    var id = "PL2332231213";
+    var Dept = "IT Department";
+    var params = {
+        TableName: empTable,
+        Key: {
+            id: id
+        },
+        UpdateExpression: "set Dept = :r",
+        ExpressionAttributeValues: {
+            ":r": Dept
+        },
+        ReturnValues: "UPDATED_NEW"
+    };
+
+    let queryExecute = new Promise((res, rej) => {
+        dynamoDB.update(params, function(err, data) {
+            if(err) {
+                console.log("Error", err);
+                rej(err);
+            } else {
+                console.log("Updated Successfully done for: " + id);
+                res(JSON.stringify(data, null, 2));
+            }
+        });
+    });
+}
+```
+
+## DynamoDB - Delete Record
+
+```
+async function deleteDataFromDatabase() {
+    var id = "PL2332231213";
+    var params = {
+        TableName: empTable,
+        Key: {
+            id: id
+        },
+    };
+    let queryExecute = new Promise((res, rej) => {
+        dynamoDB.delete(params, function(err, data) {
+            if(err) {
+                console.log("Error", err);
+                rej(err);
+            } else {
+                console.log("Deleted Successfully user: " + id);
+                res(JSON.stringify(data, null, 2));
+            }
+        });
+    });
 }
 ```
