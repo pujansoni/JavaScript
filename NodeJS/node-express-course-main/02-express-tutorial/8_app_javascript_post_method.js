@@ -14,6 +14,7 @@ app.get('/api/people', (req, res) => {
 });
 
 app.post('/api/people', (req, res) => {
+    // Here from the javascript.html we are using the axios library for the http requests and while submitting the form the http request will be of the content type application/json which is handled by the express.json() middleware. So now, we have access to the form name in the request body coming from the javascript.html file in this post method 
     const {name} = req.body;
 
     if(!name) {
