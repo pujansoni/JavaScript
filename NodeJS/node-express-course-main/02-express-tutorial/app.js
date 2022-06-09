@@ -12,6 +12,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 // Here we are using the people routes with the base path of /api/people
 app.use('/api/people', people);
+// Here we are using the login routes with the base path of /login
 app.use('/login', auth);
 
 app.listen(5000, () => {
