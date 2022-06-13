@@ -88,3 +88,69 @@ To know more about npx we can visit the link: www.npmjs.com/package/npx
 
 To check the locally installed modules we can use the command: npm ls
 To check the globally installed modules we can use the command: npm ls -g
+
+# NPM - Package Manager
+
+The individual file of a reusable code is called **Module**
+
+A Package is a directory which contains one or more modules along with a file called package.json
+
+**Note: The terms module and package are used interchangeably**
+
+### Package Manager
+
+A Package Manager, as the name suggests, helps developers share packages, install packages and manage version upgrades.
+
+There are many package managers like Bower and npm that developers can use.
+
+**Why so many Package Managers?**
+
+Every package manager is built for a specific purpose. So developers need to choose packages based on their need.
+
+For example, **Bower** is built specifically for front-end libraries like jquery, angular, bootstrap, and so on. It works on the principle of minimal resource load which is essential for your front-end to load quickly.
+
+On the other hand, **npm is mostly used for node.js packages and developer tools** like Grunt, Gulp, CoffeeScript and so on. npm aims for stability and hence loads all nested dependencies of a package.
+
+## Getting Started with npm
+
+npm, by default, comes with NodeJS.
+
+Working with npm is simple. Type npm followed by the command. To start with, find the version of npm by using the command "v" or "version"
+
+```
+> npm -v
+```
+
+You should now be able to see the version of npm
+
+npm offers good help features. To view Help, type the following command
+
+```
+> npm help
+```
+
+**This will detail the usage of npm along with the list of commands available.**
+
+Using npm with "-h" on any specific command will provide the different ways in which a specific command can be used
+
+```
+> npm -h search
+```
+
+### Searching for a Package
+
+npm registry has over 500,000 packages. So, finding the required package can be daunting if you don't know the exact package name. The different ways to search for the package are as follows:
+
+- Use the command **"npm search"** on your terminal
+- Go to [**npmjs.com**](https://www.npmjs.com/) and find package
+- Go to [**google.com**](https://www.google.com/) and search for the package
+
+### Tips for Package Selection
+
+While search results might return many packages, here are few points to consider while selecting a package:
+
+- Frequency of Updates
+- Availability of Documentation
+- Number of Downloads
+- Dependencies
+- Collaborators
