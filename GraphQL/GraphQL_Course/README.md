@@ -1,7 +1,9 @@
 <!-- Online GraphQL editor can be found at: https://graphql.github.io/swapi-graphql/ -->
+
 # GraphQL
 
 **GraphQL** is a query language for APIs and runtime for fulfilling those queries with the existing data. It was developed and open-sourced by **Facebook** in the year 2015
+
 - Provides a common interface between a client and the server for fetching the data and performing manipulations
 - Allows clients to define the required data structure and return the same from the server
 - Provides a complete and understandable description of data in API
@@ -9,6 +11,7 @@
 ## Example of GraphQL Query
 
 **Query**
+
 ```
 {
 	DryFruits
@@ -17,6 +20,7 @@
 ```
 
 **Query Response**
+
 ```
 {
 	"data": {
@@ -49,6 +53,7 @@ Following are some of the key characteristics of **GraphQL**:
 Imagine you want to request an information from a post entity and at the same time you also want to request an information of post user. Let's see how these are queried using REST and GraphQL:
 
 **REST Query**
+
 ```
 mydomain.com/posts/:id
 mydomain.com/users/:id
@@ -57,6 +62,7 @@ mydomain.com/users/:id
 You require two end points in REST, one for retrieving post entity and the other for retrieving the information of post user. The same information can be retrieved in single query using GraphQL. The query is shown below:
 
 **GraphQL Query**
+
 ```
 {
 	post(id: 1) {
@@ -193,6 +199,7 @@ type Query {
 **Structuring a query**
 
 **Request**
+
 ```
 query {
 	getBooks {
@@ -206,6 +213,7 @@ query {
 ```
 
 **Response**
+
 ```
 {
 	"data": {
@@ -240,6 +248,7 @@ type Author {
 ```
 
 **Request**
+
 ```
 query {
 	getBooks {
@@ -252,6 +261,7 @@ query {
 ```
 
 **Response**
+
 ```
 {
 	"data": {
@@ -282,6 +292,7 @@ type Mutation {
 **Structuring a Mutation**
 
 **Request**
+
 ```
 mutation {
 	addBook(title: "Fox in Socks", author: "Dr. Seuss") {
@@ -294,6 +305,7 @@ mutation {
 ```
 
 **Response**
+
 ```
 {
 	"data": {
@@ -313,6 +325,7 @@ mutation {
 - Help keep operation signatures clean
 
 **Ex:**
+
 ```
 type Mutation {
 	createPost(title: String, body: String, mediaUrls: [String]): Post
@@ -322,6 +335,7 @@ type Mutation {
 The above query can also be made simpler by using the input types as given below
 
 **Ex: Input Type**
+
 ```
 type Mutation {
 	createPost(post: PostAndMediaInput): Post
@@ -395,12 +409,13 @@ Schema types define the GraphQL server capabilities and allows the GraphQL opera
 **Mutation type**: Defines the entry point into the server for modifying server data
 
 ## Introspection
- GraphQL has a great feature of querying its own schema that allows you to view the query and mutation details available in your schema. It also gives the details regarding the argument they accept and even the available fields for querying.
 
- The following example queries all the fields present in your schema:
+GraphQL has a great feature of querying its own schema that allows you to view the query and mutation details available in your schema. It also gives the details regarding the argument they accept and even the available fields for querying.
 
- ```
- {
+The following example queries all the fields present in your schema:
+
+```
+{
 	__schema {
 		queryType {
 			name
@@ -408,14 +423,14 @@ Schema types define the GraphQL server capabilities and allows the GraphQL opera
 				name
 				description
 				type {
-					name 
+					name
 					description
 				}
 			}
 		}
 	}
- }
- ```
+}
+```
 
 ## Introduction to GraphQL Query
 
@@ -424,6 +439,7 @@ GraphQL Queries allows you to ask the server for the required data. They also gi
 GraphQL API's are usually exposed to a single endpoint because the data structure that is returned is not fixed rather it's flexible
 
 **Query Syntax 1**:
+
 ```
 query query_name {
 	someField
@@ -431,6 +447,7 @@ query query_name {
 ```
 
 **Query Syntax 2**:
+
 ```
 {
 	someField
@@ -444,6 +461,7 @@ Object is a type with some fields. A field is termed as the data
 **Example**
 
 Query
+
 ```
 {
 	fruit {name}
@@ -451,6 +469,7 @@ Query
 ```
 
 Response
+
 ```
 {
 	"data": {
@@ -466,6 +485,7 @@ In the above example, **fruit** is an **object** and **name** is the **field** w
 This query returns all the objects of a type
 
 **Example**
+
 ```
 {
 	category{name}
@@ -473,6 +493,7 @@ This query returns all the objects of a type
 ```
 
 The above query returns all the category names as shown below:
+
 ```
 {
 	"data": {
@@ -489,6 +510,7 @@ The above query returns all the category names as shown below:
 Fields take the arguments as input. Arguments can be used to determine the return value. They help us to retrieve the specific information from the server
 
 **Example**
+
 ```
 {
 	human(id: "1500") {
@@ -498,6 +520,7 @@ Fields take the arguments as input. Arguments can be used to determine the retur
 ```
 
 The above query returns only the name of the human with an id 1500
+
 ```
 {
 	"data": {
@@ -513,6 +536,7 @@ The above query returns only the name of the human with an id 1500
 Besides ids, you can give additional arguments to the query methods. These methods return only those objects that have in their fields values corresponding to the values of those arguments. You can also pass multiple arguments to the objects as shown below:
 
 **Example**
+
 ```
 {
 	fruits(color: "red", size: "medium") {
@@ -522,6 +546,7 @@ Besides ids, you can give additional arguments to the query methods. These metho
 ```
 
 The above query returns all fruits with red color and medium size
+
 ```
 {
 	"data": {
@@ -539,6 +564,7 @@ The above query returns all fruits with red color and medium size
 The fields of an object can itself be an Object with its own fields. You need to mention the fields and the subfields to be returned, in the query. You need to make the selection for the subfields in a field for the queyr to work
 
 **Example**
+
 ```
 {
 	products(id: "7") {
@@ -551,6 +577,7 @@ The fields of an object can itself be an Object with its own fields. You need to
 ```
 
 The above query renders the following output.
+
 ```
 {
 	"data": {
@@ -575,6 +602,7 @@ The above query renders the following output.
 Querying directly for the same field with different arguments is not permitted in GraphQL, because that would result in an error. **Aliases** remove these conflicts and give the required output. Aliases permits us to provide the field a customized name and to request data from the same fields with various arguments
 
 **Example**
+
 ```
 query getUsers
 {
@@ -591,6 +619,7 @@ query getUsers
 	}
 }
 ```
+
 **admins** and **accountants** are the aliases in the above example
 
 ### Fragments
@@ -598,6 +627,7 @@ query getUsers
 In the previous queries, we are reusing the same fields for both the users. This can be avoided by creating fragments on the returned type
 
 **Example**
+
 ```
 {
 	graphqlRepo:github {
@@ -622,6 +652,7 @@ fragment repoFields on GithubRepo {
 	}
 }
 ```
+
 Here the GithubRepo is the **return** type of the fragment
 
 ## Connections
@@ -646,6 +677,7 @@ The above query fetches the releaseDate of the movie "Inception" and all the act
 ## Operation Names
 
 **With Operation Names**
+
 ```
 query GithubUser {
 	github {
@@ -662,6 +694,7 @@ query GithubUser {
 ```
 
 **Without Operation Names**
+
 ```
 {
 	github {
@@ -713,6 +746,7 @@ In addition to requesting information from the server, most of the applications 
 The syntactical structure of mutations is same as queries, but the only difference is that mutations start with the keyword **mutation**
 
 **Example:**
+
 ```
 mutation {
 	createProduct(name: "Samsung", color: black) {
@@ -742,6 +776,7 @@ mutation {
 You can change an object of a specified type by providing id. You have an option to change all attributes or only a few depending on the attributes that you provide. The following example shows how to update an exisiting data that is stored in the back-end
 
 **Example**
+
 ```
 mutation {
 	updateCategory(id: 2, name: "Fresh Fruits", products: [8]) {
@@ -760,6 +795,7 @@ You can delete an object by providing its id
 The following example deletes an object with id 1
 
 **Example**
+
 ```
 mutation {
 	deleteCategory(id: 1) {
@@ -781,6 +817,7 @@ The syntactical structure of subscription is same as the queries and mutations
 Here is an example where the event happening on the type **product** is subscribed
 
 **Example**
+
 ```
 subscription {
 	newProduct {
@@ -789,18 +826,3 @@ subscription {
 	}
 }
 ```
-
-
-
-
-
-
-
-AWS Links: 
-- https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-dynamo-db.html
-- https://explore.skillbuilder.aws/learn
-- https://aws.amazon.com/developer/language/javascript/
-- https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html
-- https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/javascriptv3/example_code/s3/README.md
-
-Look into Net Ninja GraphQL Tutorials
