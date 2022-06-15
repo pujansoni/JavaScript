@@ -36,3 +36,9 @@ Additionally:
 ### AWS Lambda
 
 A rule of thumb for Lambda is that there should be one function per Lambda
+
+### AWS API Gateway
+
+To make sure that the updated API changes are deployed we always need to **Deploy API** after making the changes under **Actions**
+
+**Note: While creating Lambda it's important to click on the option** **_Use Lambda Proxy Integration_** **to make sure that the Requests will be proxied to Lambda with request details available in the 'event' of your handler function**
