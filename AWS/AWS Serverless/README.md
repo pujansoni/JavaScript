@@ -42,3 +42,119 @@ A rule of thumb for Lambda is that there should be one function per Lambda
 To make sure that the updated API changes are deployed we always need to **Deploy API** after making the changes under **Actions**
 
 **Note: While creating Lambda it's important to click on the option** **_Use Lambda Proxy Integration_** **to make sure that the Requests will be proxied to Lambda with request details available in the 'event' of your handler function**
+
+### AWS Lambda - logs with AWS CloudWatch - Node.js
+
+We can also view the AWS Lambda logs on the CloudWatch by examining the logs on the CloudWatch i.e. whenever we have logging going on in our Lambda function we can execute the lambda function and goto: **View logs in CloudWatch**. By viewing the logs on the CloudWatch if we were to log the event object of the Lambda function for Node.js we can see a large object on the CloudWatch console.
+
+**Event object** - The arguments of the Event object contains the parameters passed in during Querying and Mutation (For GraphQL)
+
+### AWS Lambda, AWS DynamoDB - Permissions
+
+In order to allow the Lambda function to interact with the DynamoDB table we have to attach the **AmazonDynamoDBFullAccess** policy to the IAM role associated with the corresponding Lambda function
+
+### Example - AWS Lambda, AWS AppSync, AWS DynamoDB
+
+*https://www.youtube.com/watch?v=_9DFFg-pNss*
+
+**Resources**:
+AWS Lambda -> AppSyncDataStoreLambda
+AWS AppSync -> AppSyncExample [DataSource: AppSyncDataStoreLambda]
+AWS DynamoDB -> UserAPITable
+AWS IAM -> We have modified the IAM role
+
+**AWS Lambda**
+
+Note: We have to attach the DynamoDB policy with the Lambda for the Lambda to interact with the DynamoDB table
+
+1. index.js
+
+```
+const getUserById = require('./getUserById');
+
+exports.handler = async (event) => {
+    // console.log('Received event: ', JSON.stringify(event, 3));
+
+    switch(event.info.fieldName) {
+        case "getMessage":
+            return { data: "Hello from Lambda" };
+        case "getUserById":
+            return await getUserById(event.arguments.userId);
+        default:
+            return null;
+    }
+
+};
+
+```
+
+2. getUserById.js
+
+```
+const AWS = require('aws-sdk');
+const docClient = new AWS.DynamoDB.DocumentClient();
+
+async function getUserById(userId) {
+    const params = {
+        TableName: "UserAPITable",
+        Key: {
+            id: userId
+        }
+    }
+
+    try {
+        const {Item} = await docClient.get(params).promise();
+        return Item;
+    } catch(err) {
+        console.log("DDB error: ", err);
+    }
+}
+
+module.exports = getUserById
+```
+
+**AWS DynamoDB**
+id location name
+2 Africa Sam
+1 Canada Pujan Soni
+
+**AWS AppSync**
+
+Note: We have to create the Data Source to attach the Lambda to the corresponding resolver function
+
+1. Schema
+
+```
+type Message {
+	data: String!
+}
+
+type Query {
+	getMessage: Message!
+	getUserById(userId: ID!): User
+}
+
+type User {
+	id: ID!
+	name: String!
+	location: String!
+}
+```
+
+2. Query
+
+```
+query getUserById {
+  getUserById(userId: "1") {
+    id
+    name
+    location
+  }
+}
+
+query getMessage {
+  getMessage {
+    data
+  }
+}
+```
