@@ -722,3 +722,491 @@ The language is pretty readable, but let's go over it so that we can have a shar
 - **String** is one of the built-in _scalar_ types - these are types that resolve to a single scalar object, and can't have sub-selections in the query. We'll go over scalar types more later
 - **String!** means that the field is _non-nullable_, meaning that the GraphQL service promises to always give you a value when you query this fields. In the type language, we'll represent those with an exclamation mark
 - **[Episode!]!** represents an _array_ of **Episode** objects. Since it is also _non-nullable_, you can always expect an array (with zero or more items) when you query the **appearsIn** field. And since **Episode!** is also _non-nullable_, you can always expect every item of the array to be an **Episode** object
+
+### Arguments
+
+Every field on a GraphQL object type can have zero or more arguments, for example the **length** field below:
+
+```
+type Starship {
+    id: ID!
+    name: String!
+    length(unit: LengthUnit = METER): Float
+}
+```
+
+All arguments are named. Unlike languages like JavaScript and Python where functions take a list of ordered arguments, all arguments in GraphQL are passed by name specifically. In this case, the **length** field has on defined argument, **unit**
+
+Arguments can be either required or optional. When an argument is optional, we can define a _default value_ - if the **unit** argument is not passed, it will be set to **METER** by default
+
+### The Query and Mutation types
+
+Most types in your schema will just be normal object types, but there are two types that are special within a schema
+
+```
+schema {
+    query: Query
+    mutation: Mutation
+}
+```
+
+Every GraphQL service has a **query** type and may or may not have a **mutation** type. These types are the same as a regular object type, but they are special because they define the _entry point_ of every GraphQL query. So if you see a query that looks like:
+
+**Request**
+
+```
+query {
+    hero {
+        name
+    }
+    droid(id: "2000") {
+        name
+    }
+}
+```
+
+**Response**
+
+```
+{
+    "data": {
+        "hero": {
+            "name": "R2-D2"
+        },
+        "droid": {
+            "name": "C-3P0"
+        }
+    }
+}
+```
+
+That means that the GraphQL service needs to have a **Query** type with **hero** and **droid** fields:
+
+```
+type Query {
+    hero(episode: Episode): Character
+    droid(id: ID!): Droid
+}
+```
+
+Mutations work in a similar way - you define fields on the **Mutation** type, and those are available as the root mutation fields you can call in your query
+
+It is important to remember that other than the special status of being the "entry point" into the schema, the **Query** and **Mutation** types are the same as any other GraphQL object type, and their fields work exactly the same way
+
+### Scalar types
+
+A GraphQL object type has a name and fields, but at some points those fields have to resolve to some concrete data. That's where the scalar type comes in: they represent the leaves of the query
+
+In the following queyr, the **name** and **appearsIn** fields will resolve to scalar types:
+
+**Request**
+
+```
+{
+    hero {
+        name
+        appearsIn
+    }
+}
+```
+
+**Response**
+
+```
+{
+  "data": {
+    "hero": {
+      "name": "R2-D2",
+      "appearsIn": [
+        "NEWHOPE",
+        "EMPIRE",
+        "JEDI"
+      ]
+    }
+  }
+}
+```
+
+We know this because those fields don't have any sub-fields - they are the leaves of the query
+
+GraphQL comes with a set of default scalar types out of the box:
+
+- **Int**: A signed 32-bit integer
+- **Float**: A signed double-precision floating point value
+- **String**: A UTF-8 character sequence
+- **Boolean**: **true** or **false**
+- **ID**: The ID scalar type represents a unique identifier, often used to refetch an object or as the key for a cache. The ID type is serialized in the same way as a String, however, defining it as an **ID** signifies that it is not intended to be human-readable
+
+In most GraphQL service implementations, there is also a way to specify custom scalar types. For example, we could define a **Date** type:
+
+```
+scalar Date
+```
+
+Then it's up to our implementation to define how that type should be serialized, deserialized, and validated. For example, you could specify that the **Date** type should always be serialized into an integer timestamp, and your client should know to expect that format for any date fields
+
+### Enumeration types
+
+Also called _Enums_, enumeration types are a special kind of scalar that is restricted to a particular set of allowed values. This allows you to:
+
+1. Validate that any arguments of this type are one of the allowed values
+2. Communicate through the type system that a field will always be one of a finite set of values
+
+Here's what an enum definition might look like in the GraphQL schema language
+
+```
+enum Episdoe {
+    NEWHOPE
+    EMPIRE
+    JEDI
+}
+```
+
+This means that wherever we use the type **Episode** in our schema, we expect it to be exactly one of **NEWHOPE**, **EMPIRE**, or **JEDI**
+
+Note that GraphQL service implementations in various languages will have their own language-specific way to deal with enums. In languages that support enums as a first-class citizen, the implementation might take advantage of that; in a language like JavaScript with no enum support, these values might be internally mapped to a set of integers. However, these details don't leak out to the client, which can operate entirely in terms of the string names of the enum values
+
+### Lists and Non-Null
+
+Object types, scalars, and enums are the only kinds of types you can define in GraphQL. But when you use the types in other parts of the schema, or in your query variable declarations, you can apply additional _type modifiers_ that affect validation of those values.
+
+```
+type Character {
+    name: String!
+    appearsIn: [Episode]!
+}
+```
+
+Here, we're using a **String** type and marking it as _Non-Null_ by adding an exclamation mark **!** after the type name. This means that our server always expects to return a non-null value for this field, and if it ends up getting a null values that will actually trigger a GraphQL execution error, letting the client know that something has gone wrong
+
+The Non-Null type modifier can also be used when defining arguments for a field, which will cause the GraphQL server to return a validation error if a null value is passed as that argument, whether in the GraphQL string or in the variables
+
+**Request**
+
+```
+query DroidById($id: ID!) {
+  droid(id: $id) {
+    name
+  }
+}
+```
+
+**Input**
+
+```
+{
+  "id": null
+}
+```
+
+**Response**
+
+```
+{
+  "errors": [
+    {
+      "message": "Variable \"$id\" of non-null type \"ID!\" must not be null.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 17
+        }
+      ]
+    }
+  ]
+}
+```
+
+Lists work in a similar way. We can use a type modifier to mark a type as a **List**, which indicates that this field will return an array of that type. In the schema language, this is denoted by wrapping the type in square brackets, **[** and **]**. It works the same for arguments, where the validation step will expect an array for that value
+
+The Non-Null and List modifiers can be combined. For example, you can have a List of Non-Null Strings:
+
+```
+myField: [String!]
+```
+
+This means that the _list itself_ can be null, but it can't have any null members. For example, in JSON:
+
+```
+myField: null // valid
+myField: [] // valid
+myField: ['a', 'b'] // valid
+myField: ['a', null, 'b'] // error
+```
+
+Now, let's say we defined a Non-Null List of Strings:
+
+```
+myField: [String]!
+```
+
+This means that the list itself cannot be null, but it can contain null values:
+
+```
+myField: null // error
+myField: [] // valid
+myField: ['a', 'b'] // valid
+myField: ['a', null, 'b'] // valid
+```
+
+You can arbitrarily nest any number of Non-Null and List modifiers, according to your needs
+
+### Interfaces
+
+Like many type systems, GraphQL supports interfaces. An _Interface_ is an abstract type that includes a certain set of fields that a type must include to implement the interface
+
+For example, you could have an interface _Character_ that represents any character in the Star Wars trilogy:
+
+```
+interface Character {
+    id: ID!
+    name: String!
+    friends: [Character]
+    appearsIn: [Episode]!
+}
+```
+
+This means that any type that _implements_ **Character** needs to have these exact fields, with these arguments and return types
+
+For example, here are some types that might implement **Character**:
+
+```
+type Human implements Character {
+  id: ID!
+  name: String!
+  friends: [Character]
+  appearsIn: [Episode]!
+  starships: [Starship]
+  totalCredits: Int
+}
+
+type Droid implements Character {
+  id: ID!
+  name: String!
+  friends: [Character]
+  appearsIn: [Episode]!
+  primaryFunction: String
+}
+```
+
+You can see that both of these types have all of the fields from the **Character** interface, but also bring in extra fields, **totalCredits, starships, and primaryFunction**, that are specific to that particular type of character
+
+Interfaces are useful when you want to return an object or set of objects, but those might be of several different types
+
+For exampmle, note that the following query produces an error:
+
+**Request**
+
+```
+query HeroForEpisode($ep: Episode!) {
+  hero(episode: $ep) {
+    name
+    primaryFunction
+  }
+}
+```
+
+**Input**
+
+```
+{
+  "ep": "JEDI"
+}
+```
+
+**Response**
+
+```
+{
+  "errors": [
+    {
+      "message": "Cannot query field \"primaryFunction\" on type \"Character\". Did you mean to use an inline fragment on \"Droid\"?",
+      "locations": [
+        {
+          "line": 4,
+          "column": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+The **hero** field returns the type **Character**, which means it might be either a **Human** or a **Droid** depending on the **episode** argument. In the query above, you can only ask for fields that exist on the **Character** interface, which doesn't include **primaryFunction**
+
+To ask for a field on a specific object type, you need to use an inline fragment
+
+**Request**
+
+```
+query HeroForEpisode($ep: Episode!) {
+  hero(episode: $ep) {
+    name
+    ... on Droid {
+      primaryFunction
+    }
+  }
+}
+```
+
+**Input**
+
+```
+{
+  "ep": "JEDI"
+}
+```
+
+**Response**
+
+```
+{
+  "data": {
+    "hero": {
+      "name": "R2-D2",
+      "primaryFunction": "Astromech"
+    }
+  }
+}
+```
+
+### Union types
+
+Union types are very similar to interfaces, but they don't get to specify any common fields between the types
+
+```
+union SearchResult = Human | Droid | Starship
+```
+
+Wherever we return a **SearchResult** type in our schema, we might get a **Human**, a **Droid**, or a **Starship**. Note that members of a union type need to be concrete object types: you can't create a union type out of interfaces or other unions
+
+In this case, if you query a field that returns the **SearchResult** union type, you need to use an inline fragment to be able to query any fields at all:
+
+**Request**
+
+```
+{
+  search(text: "an") {
+    __typename
+    ... on Human {
+      name
+      height
+    }
+    ... on Droid {
+      name
+      primaryFunction
+    }
+    ... on Starship {
+      name
+      length
+    }
+  }
+}
+```
+
+**Response**
+
+```
+{
+  "data": {
+    "search": [
+      {
+        "__typename": "Human",
+        "name": "Han Solo",
+        "height": 1.8
+      },
+      {
+        "__typename": "Human",
+        "name": "Leia Organa",
+        "height": 1.5
+      },
+      {
+        "__typename": "Starship",
+        "name": "TIE Advanced x1",
+        "length": 9.2
+      }
+    ]
+  }
+}
+```
+
+The **\_\_typename** field resolves to a **String**
+which lets you differentiate different data types from each other on the client
+
+Also, in this case, since **Human** and **Droid** share a common interface **(Character)**, you can query their common fields in one place rather than having to repeat the same fields across multiple types
+
+**Request**
+
+```
+{
+  search(text: "an") {
+    __typename
+    ... on Character {
+      name
+    }
+    ... on Human {
+      height
+    }
+    ... on Droid {
+      primaryFunction
+    }
+    ... on Starship {
+      name
+      length
+    }
+  }
+}
+```
+
+Note that **name** is still specified on **Starship** because otherwise it wouldn't show up in the results given that **Starship** is not a **Character!**
+
+### Input types
+
+So far, we've only talked about passing scalar values, like enums or strings, as arguments into a field. But you can also easily pass complex objects. This is particularly valuable in the case of mutations, where you might want to pass in a whole object to be created. In the GraphQL schema language, input types look exactly the same as regular object types, but with the keyword **input** instead of **type**:
+
+```
+input ReviewInput {
+    stars: Int!
+    commentary: String
+}
+```
+
+Here is how you could use the input object type in a mutation:
+
+**Request**
+
+```
+mutation CreateReviewForEpisode($ep: Episode!, $review: ReviewInput!) {
+  createReview(episode: $ep, review: $review) {
+    stars
+    commentary
+  }
+}
+```
+
+**Input**
+
+```
+{
+  "ep": "JEDI",
+  "review": {
+    "stars": 5,
+    "commentary": "This is a great movie!"
+  }
+}
+```
+
+**Response**
+
+```
+{
+  "data": {
+    "createReview": {
+      "stars": 5,
+      "commentary": "This is a great movie!"
+    }
+  }
+}
+```
+
+The fields on an input object type can themselves refer to input object types, but you can't mix input and output types in your schema. Input object types also can't have arguments on their fields
