@@ -657,3 +657,68 @@ Given that there are some situations where you don't know what type you'll get b
 In the above query, **search** returns a union type that can be one of three options. It would be impossible to tell apart the different types from the client without the **\_\_typename** field
 
 GraphQL services provide a few meta fields, the rest of which are used to expose the Introspection system
+
+## Schemas and Types
+
+### Type system
+
+If you've seen a GraphQL query before, you know that GraphQL query language is basically about selecting fields on objects. So, for example, in the following query:
+
+**Request**
+
+```
+{
+    hero {
+        name
+        appearsIn
+    }
+}
+```
+
+**Response**
+
+```
+{
+    "data": {
+        "hero": {
+            "name": "R2-D2",
+            "appearsIn": [
+                "NEWHOPE",
+                "EMPIRE",
+                "JEDI"
+            ]
+        }
+    }
+}
+```
+
+1. We start with a special "root" object
+2. We select the **hero** field on that
+3. For the object returned by **hero**, we select the **name** and **appearsIn** fields
+
+Because the shape of GraphQL query closely matches the result, you can predict what the query will return without knowing that much about the server. But it's useful to have an exact description of the data we can ask for - what fields can we select? What kinds of objects might they return? What fields are available on those sub-objects? That's where the schema comes in
+
+Every GraphQL service defines a set of types which completely describe the set of possible data you can query on that service. Then, when queries come in, they are validated an executed against the schema
+
+### Type language
+
+GraphQL services can be written in any language. Since we can't rely on a specific programming language syntax like JavaScript, to talk about GraphQL schemas, we'll define our own simple language. We'll use the "GraphQL schema language" - it's similar to the query language, and allows us to talk about GraphQL schemas in a language-agnostic way
+
+### Object types and fields
+
+The most basic components of a GraphQL schema are object types, which just represent a kind of object you can fetch from your service, and what fields it has. In the GraphQL schema language, we might represent it like this:
+
+```
+type Character {
+    name: String!
+    appearsIn: [Episode!]!
+}
+```
+
+The language is pretty readable, but let's go over it so that we can have a shared vocabulary:
+
+- **Character** is a _GraphQL Object Type_, meaning it's a type with some fields. Most of the types in your schema will be object types
+- **name** and **appearsIn** are _fields_ on the **Character** type. That means that **name** and **appearsIn** are the only fields that can appear in any part of a GraphQL query that operates on the **Character** type
+- **String** is one of the built-in _scalar_ types - these are types that resolve to a single scalar object, and can't have sub-selections in the query. We'll go over scalar types more later
+- **String!** means that the field is _non-nullable_, meaning that the GraphQL service promises to always give you a value when you query this fields. In the type language, we'll represent those with an exclamation mark
+- **[Episode!]!** represents an _array_ of **Episode** objects. Since it is also _non-nullable_, you can always expect an array (with zero or more items) when you query the **appearsIn** field. And since **Episode!** is also _non-nullable_, you can always expect every item of the array to be an **Episode** object
