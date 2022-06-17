@@ -1580,3 +1580,77 @@ exports.review = review;
 - Cons:
   - Any intensive CPU computation will block node.js responsiveness, so a threaded platform is a better approach
   - Using relational database with Node.js is considered less favorable
+
+# Environment Variables
+
+The Environment Variables are variables that are set by the Operating system. They are decoupled from application logic. They can be accessed from applications and programs through various APIs
+
+There is a Node.js library called **dotenv** that helps you manage and load environment variables. Let's take a look at the purpose of environment variables, how to use them, and their role in a development environment
+
+## Purpose of Environment Variables
+
+### Separation of Concerns
+
+Separation of Concerns refers to a software design principle that states that computer programs should be divided into distinct sections, such that each section addresses a separate concern. This means that a developer working on one section needs to have minimal knowledge about other sections. The details of other sections are placed on the sideline
+
+Application Configuration is a section of the code that should be decoupled from the application. Good software practices state that **app config requires strict separation of config from code**. Such config files can be stored as environment variables
+
+### Protecting Config Keys
+
+With the increasing popularity of cloud computing, more applications are using **cloud services** and other **external APIs**. Most of these come with config keys for control and access management. If the API keys are added to the application, and the code is pushed to a public repository on GitHub, this could lead to an unmonitored access problem. Unknown parties might end up using your API keys, leading to an unintended bill for your cloud servvices, and other potential security issues
+
+To solve this problem, the config keys can be added as environment variables and invoked from a closed environment from where the application is deployed
+
+## Environment Variables in Node.js
+
+In Node.js, process.env is a global variables that is injected during runtime. It is a view of the state of the system environemnt variables. When we set an environment variable, it is loaded into **process.env** during runtime and can later be accessed
+
+**dotenv** is a module available on **npm** to load environment variables into **process.env.dotenv** can be added to your Node.js project by installing it from npm or yarn:
+
+```
+# with npm
+npm install dotenv
+
+# or with Yarn
+yarn add dotenv
+```
+
+In a production environment, the IP address and the port on which it runs might change every single time, depending on the server. Since we cannot hardcode the server port, we can solve it by using dotenv
+
+Create a file called **index.js** and add the following code to it
+
+```
+const express = requrire("express");
+require("dotenv").config();
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+    console.log(`Server is running on the port ${port}.`);
+});
+```
+
+Suppose we want to use sensitive credentials like username and password in an open-source project, we can use **dotenv** for that as well
+
+```
+require("dotenv").config();
+
+const mysql = require("mysql");
+
+let con = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+});
+```
+
+Now, to set the env variables, create a **.env** file at the root of the project directory
+
+```
+DB_HOST=localhost
+DB_User=admin
+DB_PASS=password
+```
+
+Enter the values of the following variables. This will load these variables into **process.env**. We can add this **.env** file to **.gitignore** so that our credentials are protected
