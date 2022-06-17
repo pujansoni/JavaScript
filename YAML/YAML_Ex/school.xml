@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<School name="DPS" principal="Someone">
+    <Students>
+        <Student>
+            <rno>23</rno>
+            <name>Pujan Soni</name>
+            <marks>90</marks>
+        </Student>
+    </Students>
+</School>
+<!-- See the json version for the same representation -->

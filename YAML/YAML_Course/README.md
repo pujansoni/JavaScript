@@ -504,3 +504,237 @@ The naming conventions which are mentioned below are explained in the context of
   - l - Matching a complete line(s)
   - x-y- - starting with x- and ending with y- characters, where x- and y- are any of the above prefixes
   - x+, x-y+ - The additional property that the matched content indentation level is greater that the specified n parameter
+
+## Space Processing
+
+To achieve the structure, serialized YAML uses text lines. These requires special processing rules for white space(both space and tab)
+
+### Indentation
+
+Structure is determined by the indentation (line break character followed by zero or more spaces at start of the line)
+
+- Tab characters are not allowed in indentation as they vary in different system
+- The amount of indentation is presentation detail
+- The child node is more indentated than parent node
+- All siblings should follow same indentation and content of siblings can be indented independently
+- The "-", "?", and ":" characters used to denote block collection entries
+
+**Example**
+
+```
+%YAML 1.2
+- - -
+!!map {
+  ? !!str "Not indented"
+  : !!map {
+      ? !!str "By one space"
+      : !!str "By four\n  spaces\n",
+      ? !!str "Flow style"
+      : !!seq [
+          !!str "By two",
+          !!str "Also by two",
+          !!str "Still by two",
+        ]
+    }
+}
+```
+
+### Separation Spaces
+
+YAML uses white space characters between token in a line that is outside of indentation and scalar content
+
+- white space also includes tab space
+- separation spaces comes under presentation detail
+
+**Line Prefix**
+
+_Each line in scalar content begin with non-content line prefix (which includes indentation)._
+
+- Flow scalar style includes leading white-spaces including tab spaces
+- Line prefixes also come under presentation details
+
+```
+%YAML 1.2
+---
+!!map {
+  ? !!str "plain"
+  : !!str "text lines",
+  ? !!str "quoted"
+  : !!str "text lines",
+  ? !!str "block"
+  : !!str "text\n·→lines\n",
+}
+```
+
+### Empty lines
+
+\*Empty lines consists of non-content prefix followed by line break
+
+**Example**
+
+```
+%YAML 1.2
+---
+!!map {
+  ? !!str "Folding"
+  : !!str "Empty line\nas a line feed",
+  ? !!str "Chomping"
+  : !!str "Clipped empty lines\n",
+}
+```
+
+### Line Folding
+
+_Line folding can be defined as breaking of lines for human readability_
+
+- If empty lines appears after the line break, then it is chopped
+- If the line is not empty, then line break is converted into single space
+- Line folding is applied to styles of scalar content like block style and flow style
+
+### Types of foldings
+
+**Block folding**
+
+- In this the final line break and trailing empty lines are chomped and never folded
+- The line breaks which are surrounded by text lines which contains leading white space are not subjected to folding
+- The rules that are followed in the block folding are **_paragraph is interpreted as a line, empty lines as line feed and finally more indented lines are preserved_**
+
+**Flow folding**
+
+- The structure in the line folding depends on the indicators rather than indentation
+- The rules that are followed in flow folding are **_paragraph is interpreted as a line, empty line as line feed and text can be more indented without effecting the content_**
+
+### Comments
+
+- An explicit comment is denoted by the syntax **#**
+- Comments are separated from other token with white spaces
+- Comment lines appear independently outside of scalar content and only white space character is considered to be a comment line
+
+**Example**
+
+```
+# This is a comment
+```
+
+**Multi-line comments**
+
+- YAML doesn't support multi-line comments, but you can write comments in multiple lines
+
+**Example**
+
+```
+# this comment
+# is written in
+# multiple lines
+```
+
+### Directives
+
+**_Directives can be defined as instructions given to YAML processor_**
+
+- Each directive is denoted by the character **%** followed by directive name and its parameters
+
+There are two different types of directives such as
+
+- **_Reserved directive_**
+- **_YAML directive_**
+- **_TAG directive_**
+
+**Reserved directive**: YAML should reject unknown directives with an appropriate warning. Those directives are called reserved directives
+
+**Example**
+
+```
+% # This is ignored
+  # with warning
+```
+
+**YAML directive**
+
+**YAML directive** specifies the version of document that YAML follow to
+
+- Let us consider an YAML 1.2 version processor which accepts documents with %YAML 1.2 directive and also accept the documents which doesn't have an directives
+- If the directive is higher minor version (e.g.: %YAML 1.3 directive) then the document is processed with an appropriate warning
+- If the directive is higher major version (e.g.: %YAML 2.0 directive) then the document is rejected with an approprite error
+- If the directive is less than the processor version (e.g.: %YAML 1.1. directive), then it should accept the document as 1.2 version is superset of 1.1
+
+**NOTE**: It gives an error when you specify more than one directive in same document
+
+**TAG Directive**
+
+**Node tags** are specified through a short-hand notation through TAG directive
+
+- TAG directive is associated with handle along with a prefix
+
+**Example**
+
+```
+%TAG !yaml! tag:yaml.org,2002:
+---
+!yaml!str "A"
+```
+
+- You can't specify more than one **_TAG directive_** for one handle
+
+**TAG Handles**
+
+**_The prefix of the exactly concerned tag handle will be matched by tag handle. There are three types of handle variants_**
+
+- Primary Handle - Primary handle is indicated by single **!** identifier. These are interpreted as local tags. The prefix associated with this handle is **!**
+- Secondary Handle - Secondary Handle is indicated by double **! !** identifier. The prefix associated with this is **tag:yaml.org, 2002:**
+- Named Handle - Named handle is surrounded by a non-empty name with **!** character. A handle name cannot be used in tag shorthand until an explicit TAG has associated with some prefix
+
+### TAG Prefixes
+
+There are two types of tag prefixes such as
+
+- Local Tag Prefix and
+- Global Tag Prefix **Local Tag Prefix** - If the prefix consists of **!** identifier, then the shorthands using handle are expanded to a local tag
+
+**Syntax**
+
+```
+c-ns-local-tag-prefix ::= "!" ns-uri-char*
+```
+
+**Global Tag Prefix** - If the prefix begin with an identifier other than **!**, it must be a valid URI prefix. Shorthands using handle are expanded to a global URI tag
+
+**Syntax**
+
+```
+ns-global-tag-prefix ::= ns-tag-char ns-uri-char*
+```
+
+### Node Properties
+
+**_Node may consists of two optional properties such as anchor and tag_**
+
+- Node properties are specified in any order
+
+**Example**
+
+```
+!!str &A "string1":
+  !!str "string2"
+&B  "string3": *A
+```
+
+### Node Tags
+
+**\*The type of native data structure is presented by node is identified by the **Tag property\*\*
+
+- **_Verbatim Tags_** - verbatim tag is surrounded by the identifiers **<** and **>**. Verbatim tag must start with a local tag(**!**) or a global tag (**valid URI**)
+- **_Tag shorthand_** - It should consist of tag handle with prefix followed by non-empty suffix. Prefix must start with either local tag or global tag. The suffix should not contain characters like "!", "[", "]", "{", "}", ","
+- **_Non-specific tag_** - If a node doesn't contain any tag property then it is assigned to non-specific tag. For scalar the non-specific tag **!** and for other node it is **?**. You can explicitly specify the non-specific tag ! and the node can be interpreted to "tag:yaml.org, 2002:seq",
+  "tag:yaml.org,2002:map" and "tag.yaml.org,2002:str"
+- An anchor is identified by the symbol **&**
+- An alias node is used to represent the subsequent occurrences of the anchored nodes and it is represented as **\***
+- Anchor names should not contains characters like **"{", "}", "[", "]", ","**
+- Anchor name is preserved in serialization tree but it is not reflected in representation graph
+
+**Example**
+
+```
+First occurrence: &anchor Value
+Second occurrence: *anchor # This is alias
+```
