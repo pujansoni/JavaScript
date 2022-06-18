@@ -738,3 +738,840 @@ ns-global-tag-prefix ::= ns-tag-char ns-uri-char*
 First occurrence: &anchor Value
 Second occurrence: *anchor # This is alias
 ```
+
+## Node Styles
+
+**Node can be represented in two styles**
+
+- Block style
+- Flow style
+
+Block style and Flow style are further explained with the concepts like **Scalar, mapping, and sequences**
+
+### Flow Styles
+
+There are three tasks that are done by _YAML flow styles_
+
+- Folding long content lines for readability
+- The construction of native data structure can be controlled by tagging nodes
+- Usage of anchors and aliases to reuse constructed object instances
+
+---
+
+There are two types of nodes in flow styles
+
+- Alias Nodes
+- Empty Nodes
+
+### Alias Nodes
+
+- The first occurrence of the node is considered as _Anchor_
+- The repeated occurrences of the node after the first appearance of the node is presented as _Alias Nodes_
+- **_Alias nodes are represented by the symbol \* _**
+
+**Example**
+
+```
+%YAML 1.2
+---
+!!map {
+    ? !!str "First occurrence"
+    : &F !!str "Foo",
+    ? !!str "Override anchor"
+    : &S !!str "Bar",
+    ? !!str "Second occurrence"
+    : *F,
+    ? !!str "Reuse anchor"
+    : *S,
+}
+```
+
+### Empty Nodes
+
+- YAML allows node content to be empty in some cases
+- Nodes with empty content are treated as plain scalars with an empty value
+- Empty nodes are determined to consists of a null value
+
+**Example**
+
+```
+%YAML 1.2
+---
+!!map {
+    ? !!str "tcs" : !!str "",
+    ? !!str "" : !!str "fresco",
+}
+```
+
+- If both **node properties** and **node content** are made null then it is known as **Completely Empty flow nodes**
+
+**Example**
+
+```
+%YAML 1.2
+---
+!!map {
+    ? !!str "tcs" : !!null "",
+    ? !!null "" : !!str "fresco",
+}
+```
+
+### Flow Scalar Styles
+
+YAML comprises of three _Flow scalar types_ such as:
+
+- Double-quoted
+- Single-quoted
+- Plain or unquoted
+- Scalar style comes under presentation detail
+
+### Double-quoted
+
+- Double-quoted is presented by the indicator **double-quotes(")**
+- The arbitrary strings (can be empty or it consists of characters) can be escapted using escaping character **/**
+
+**Example**
+
+```
+%YAML 1.2
+---
+!!map {
+  ? !!str "implicit block key"
+  : !!seq [
+    !!map {
+      ? !!str "implicit flow key"
+      : !!str "value",
+    }
+  ]
+}
+```
+
+### Single-quoted
+
+_Single-quoted_ is represented by the indicator **Single quotes(')**
+
+- Characters like " and \ are freely used in single quotes
+
+**Example**
+
+```
+%YAML 1.2
+---
+!!str "here's to \"quotes\""
+```
+
+**All leading and white space characters are excluded from the content by doing following tasks**
+
+- Every continuation line must contain at least one non-space character
+- Line folding consumes empty lines
+
+**Example**
+
+```
+%YAML 1.2
+---
+!!str " 1st non-empty\n\
+        2nd non-empty \
+        3rd non-empty "
+```
+
+### Plain Style or Unquoted
+
+- It doesn't contain any indicator or escaping sequences to specify
+- Features of plain style are it is **most readable, sensitive and context-sensitive style**
+- Characters like **:, ? and -** indicators can be used as first character if it is followed by non-space safe character
+- Plain scalars never contain **: and #** characters as they cause ambiguity with key: value pairs
+- Characters like "[", "]", "{", "}", and "," are not involved in plain scalars as they cause ambiguity with flow collection structures
+
+### Flow Collection Styles
+
+Flow collection can be nested in three formats
+
+- Nested with block collection
+- Nested with another flow collection
+- Part of an implicit key
+
+You can terminate flow sequence entries by the indicator ,
+There are two different types of flow collections
+
+- Flow Sequences
+- Flow Mappings
+
+### Flow Sequences
+
+**Flow sequence is encompassed by the indicators [ and ] characters**
+
+- The entries can be separated by , character
+- Flow node can act like a flow sequence entry
+- Compact notation is made available when flow sequence entry is a mapping with single key: value pair
+
+**Example**
+
+```
+- [A, B, ]
+- [C, D]
+```
+
+### Flow Mappings
+
+**Flow mappings are encompassed by { and } characters**
+
+- The entries are separated by , character
+
+**Example**
+
+```
+- {A : B, C : D, }
+- {E : F, G : H }
+```
+
+## Flow Nodes
+
+\*\*All the flow styles consists of explicit start and end indicators except for plain scalar
+
+**Following is the example of flow content**
+
+```
+%YAML 1.2
+---
+!!seq [
+  !!seq [ !!str "tcs", !!str "fresco" ],  # flow sequence
+  !!map { ? !!str "tcs" : !!str "fresco" },  # flow mapping
+  !!str "tcs",                               # double-quoted
+  !!str 'fresco',                        # single-quoted
+  !!str play,                                # plain or unquoted
+]
+```
+
+### Complete flow node
+
+**A complete flow node can contain optional node properties for all nodes exxcept for alias nodes as they refer to anchor node properties**
+
+```
+%YAML 1.2
+---
+!!seq [
+  !!str "one",
+  !!str "two",
+  &one !!str "three",
+  *one,
+  !!str "",
+]
+```
+
+## Block Scalar Header
+
+**You can control the block scalars by placing the few indicators in the header section which is placed before the content**
+
+- Non-content line break with an optional content will be placed after the header
+- In this scenario, additional comments are not allowed
+
+**Example**
+
+```
+- | # Empty header↓
+ literal
+- >1 # Indentation indicator↓
+ ·folded
+- |+ # Chomping indicator↓
+ keep
+- >1- # Both indicators↓
+ ·strip
+```
+
+### Block Indentation Indicator
+
+- The indentation level of block scalar is identified from the first non-empty line
+- Leading empty lines should not contain more spaces in the line than non-empty line
+- If the first non-empty line contains space characters then the detection fails. content start with **tab** or **#** character
+- If the detection fails, then YAML requires an explicit indentation indicator to be given for the content indentation level
+- The indentation level is specified through an integer number
+
+### Block Chomping Indicator
+
+- **Line breaks** and **Trailing empty lines** are interpreted through chomping controls. There are three types of chomping methods
+  **Strip** - By using strip you can exclude all the line breaks and trailing empty lines. The indicator for the stripping is **"-"**
+  **Clip** - The default chomping indicator is clipping. It protects the line breaks in scalar content but eliminates trailing spaces
+  **Keep** - It protects both trailing spaces and line breaks and the indicator for keep is **"+"**
+
+**Example**
+
+```
+strip: |-
+  text↓
+clip: |
+  text↓
+keep: |+
+  text↓
+```
+
+### Literal Style
+
+**Literal style is denoted by "|" indicator. It is simple, restricted and most readable scalar style**
+
+**Example**
+
+```
+|↓
+·literal↓
+·→text↓
+↓
+```
+
+Including white space characters are considered under content for literals scalars. Empty lines are not folded but line breaks and trailing empty lines are chomped
+
+### Folded Style
+
+**Folded style is represented by the indicator **">"\*\*
+
+**Example**
+
+```
+>↓
+·folded↓
+·text↓
+↓
+```
+
+- The lines which are started with white-space characters and more-indented lines are not folded
+- Final line break and trailing empty lines which are subjected to chomping are never folded
+
+### Block Collection Styles
+
+Indicators are not used in block collection styles, instead a **lookahead** method is used to differentiate block collection from plain scalar only when key: value pair or sequence entry is seen
+
+**Block Sequences**
+
+- Block sequences can be defined as a series of nodes that are indicated by the symbol **-**
+- The node is separated from the white space by the indicator
+- The following syntax is used to denote the block sequence. (e.g.: indicator followed by non-space character)
+
+### Block Sequences
+
+**Example**
+
+```
+block sequence:
+··- A↓
+  - B : C↓
+```
+
+Entry node can use one of these three notations like
+
+- Empty node
+- Nested block node
+- Compact in-line notation (nested block collection uses compact in-line notation)
+
+### Block Mapping
+
+**Block Mapping** can be defined as series of entries in the form of key:value pair
+
+**Syntax**
+
+```
+block mapping:
+·key: value↓
+```
+
+- If a question mark (**?**) indicator is specified in block mapping then the optional value node should also be specified in a separate line with an indicator(**:**). Here compact-line notation is used for which is discussed before
+
+**Explicit Block mapping Syntax**
+
+```
+? explicit key # Empty value↓°
+? |
+  block key↓
+:·- one # Explicit compact
+··- two # block value↓
+```
+
+### Block Node
+
+- Flow nodes are allowed to be nested in block collections
+- Flow nodes should be indented more than one space more than its parent block collection
+- There are two types of block nodes like
+- **Block Scalar Node**
+- **Block Collection Node**
+
+**Block Scalar Node**
+
+```
+literal: |2
+··value
+folded:↓
+···!foo
+··>1
+·value
+```
+
+**Block Collection Node**
+
+```
+sequence: !!seq
+- entry
+- !!seq
+ - nested
+mapping: !!map
+ foo: bar
+```
+
+# Character Set
+
+**Characters are the basic structure for serialized version of YAML document. YAML allows only certain character subset from unicode characters for processing. The following topics are the syntax productions of YAML serialization**
+
+The following are the standard ASCII Unicode control codes used by the computer systems which are excluded to ensure readability
+
+- C0 control block #x0-#x1F(except for TAB #x9, LF(Line Feed), #xA, CR(Carriage Return), #xD)
+- C1 control block #x80-#x9F(except for NEL(Next Line), #85)
+- Surrogate block #xD800=#xDFFF, #xFFFE, and #xFF
+- YAML processor should accept all Unicode characters on input except those which are excluded from character set
+- YAML processor should produce only acceptable characters on output and excluded characters are presented through escape sequences
+
+**Note: C0 and C1 control block consists of hexadecimal codes which are used by he system instead of using text**
+
+## Character Encoding
+
+- YAML processor supports UTF-8 and UTF-16 character encodings
+- UTF-32 is used for JSON functionality
+- If the data stream consists of a character code U+FEFF at it's beginning then it is known as _byte order mark_ (used as a signature for defining byte order and encoding form)
+- If character stream begin with byte order mark, then character encoding is decided by the byte order mark
+
+**Example: Byte order mark character is represented by "<=>" character**
+
+```
+<=># This is a comment
+```
+
+**Byte order mark should not appear in the middle of the document**
+
+```
+- It is not valid to use Bom
+<=>
+-In the middle of document
+```
+
+## Indicators
+
+**The characters which have special semantics are called indicators**
+
+The following are the different types of indicator characters
+
+- Hyphen(#x2D) denotes a block sequence entry
+- Question mark(#x3F) denotes mapping key
+- Colon(#x3A) denotes mapping value
+- Comma(#x2C) end a flow collection entry
+- Left bracket(#x5B) - start a flow bracket
+- Right bracket(#x5D) - end a flow bracket
+- Left brace(#x7B) - start a flow mapping
+- Right brace(#x7D) - end a flow mapping
+- Hash or Pound(#x23) indicates comment
+- Ampersand(#x26) - indicate node anchor property
+- Asterisk(#x2A) indicates an alias node
+- Exclamatory(#x21) - is heavily overloaded for specifying node tags. It can be used for denoting tag handles which are used in tag directives and tag properties, to denote local tags and for the non-plain scalars it is used as non-specific tag
+- Vertical Bar(7C) - indicates literal block scalar
+- Greater than(#x3E) - indicates folded block scalar
+- Single quote(#x27) - indicates single-quoted flow scalar
+- double quotes(#x22) - indicates double-quoted flow scalar
+- percentage(#x25) indicates directive line
+- "@" and "`" are reserved for future use
+
+---
+
+"left square bracket", "right square bracket", "left flower bracket", "right flower bracket" and "comma" comes under flow collections
+
+### Line Break Characters
+
+- ASCII line-break characters are Line-feed (#xA) and Carriage-return(#xB)
+- Following are Non-ASCII line break characters Form feed (#x0C), Next line (#x85), Line separator (#x2028) and paragraph separator (#x2029)
+- YAML version 1.1 doesn't support the above non-ASCII line break characters as they are treated as non-break characters of YAML version 1.2. So YAML processors while processing YAML 1.1 document should treat line-break characters as non-break characters with an appropriate warning
+- Line break characters are different for different systems
+- Inside the scalar content, YAML processor must normalize the line breaks into single line-feed characters and outside of the scalar content line breaks are used to terminate lines.
+- Line breaks sometimes use glyph (“↓”)
+
+**Syntax**
+
+```
+|
+  Line break (no glyph)
+  Line break (glyphed)↓
+```
+
+### White Space Characters
+
+**YAML contains two white space characters such as space and tab**
+
+- Tab characters are displayed with a glyph “→” and space characters are displayed with a glyph "."
+
+**Example**
+
+```
+# Tabs and spaces
+quoted:·"Quoted →"
+block:→|
+··void main() {
+··→printf("Fresco Play!\n");
+··}
+```
+
+### Miscellaneous Characters
+
+**There are different character classes that are used by YAML**
+
+- Decimal digits are used for number
+- Hexadecimal are used for escape sequences
+- ASCII letter characters
+- Alpha numeric characters for identifiers
+- URI characters are used for tags
+- The ! is used to represent the end of named tag handle whereas it is restricted to use in tag shorthands. These shorthands should not contain characters like "left square bracket","right square bracket","left flower bracket","right flower bracket" and "comma" as they cause ambiguity with flow collection structures
+
+### Escaped Characters
+
+- Non-printable characters must be escaped
+- In YAML escape sequences can be done by the identifier \ and come under presentation detail
+- Then these escape sequences are interpreted into a unicode character
+- Escape sequences are interpreted only in double-quoted scalars. Beside this, the identifier has no meaning in other scalar styles
+- There are different escaped characters like null (#x0), backspace (#x8), feed (#xA), vertical tab (#xB), form feed (#xC), carriage return (#xD) and escape (#x1B)
+
+**Example**
+
+```
+%YAML 1.2
+---
+"Different examples \x5C
+\x22 \x07 \x08 \x1B \x0C
+\x0A \x0D \x09 \x0B \x00
+\x20 \xA0 \x85 \u2028 \u2029
+are explained"
+```
+
+## Documents
+
+**character stream can be defined as the combination of several documents**
+
+**Document Prefix**
+
+- Before starting a document, a prefix and comment lines (optional) should occur before document for character encoding
+- All the documents in the stream must use the same character encoding
+- You can re-specify the character encoding by using byte-order-mark
+
+**Syntax**
+
+```
+⇔# Comment
+# lines
+Document
+```
+
+### Document Markers
+
+**At the beginning of the document if % character appears then it is assumed as Directive**
+
+- The actual content in the YAML file also happens to start with %
+- Then how can you distinguish the above two scenarios
+- For this a new concept is introduced known as Special marker lines
+- Two special marker lines are used. One at beginning of the document and another at end of the document
+- If the directives end with this marker line, then the content lines can use % character as their first character
+- By using the marker line at end of the document to tell the parser that you can start scanning for directives again
+
+**Syntax**
+
+```
+%YAML 1.2
+---
+Document
+... # Suffix
+```
+
+### Bare Documents
+
+- Bare document is well-known as clean document as it doesn't start with any directives or marker lines
+- Bare document contains only the content
+- The first non-comment line may not start with % character
+- Document nodes are more indented such that if it allows parent node to be indented at -1 space, then the subsequents nodes should be more indented than parent node it allows them to be indented at zero or more spaces
+
+**Example**
+
+```
+Bare
+document
+...
+# No document
+...
+|
+%Fresco-Play  # Not the first line
+```
+
+### Explicit Documents
+
+The name itself explains that it consists of explicit directives end marker line rather than directives
+
+- The document can be completely empty
+
+**Example**
+
+```
+---
+{ matches
+% : 20 }
+...
+---
+# Empty
+...
+```
+
+### Directive Documents
+
+**Directive Documents** can be defined as the document begins with some directives followed by explicit directives end marker line
+
+**Example**
+
+```
+%YAML 1.2
+--- |
+%Fresco-Play
+. . .
+%YAML1.2
+---
+# Empty
+. . .
+```
+
+### Streams
+
+**YAML stream can be defined as the combination one or more documents**
+
+- The successive documents should be separated by seperation marker line
+- If one document doesn't end with document end marker line, then the successive document must start with directive end marker line
+
+**Example**
+
+```
+Document
+---
+# Empty
+...
+%YAML 1.2
+---
+matches %: 80
+```
+
+### Use cases of streams
+
+**A well-formed stream can be defined as the sequence of bytes. The following are the different use-cases comes under YAML stream structure**
+
+- **Appending to streams** - In YAML single stream can allow multiple documents such that they are used as log files. Each document is independent to each other
+- **Concatenating Streams** - Concatenating two YAML streams needs them to use same character encoding. It is compulsory to separate two documents either by separating last document of first stream of or the first document of second stream.You can separate them by placing document end marker between two streams
+- **Communication streams** - The advantage of document end marker is that it signals that document is ended without closing the stream or starting next document. The main advantage is that receiver will wont wait for next one to arrive. The sender can aslo send keep-alive messages in the form of comments without signalling the start of the document
+
+# YAML Schema
+
+As in the previous topics you have learned about tags and non-specific tags.
+
+_The combination of set of tags and a procedure for resolving non-specific tags is introduced through YAML Schema_
+
+## Schemas
+
+There are four different types of schemas in YAML
+
+- **Failsafe Schema** - It can work with any YAML document. Different types of tags are discussed in this schema
+- **JSON Schema** - It allows parsing json files. YAML processor will consider it is an option
+- **Core Schema** - It is extension of JSON schema and default schema for YAML processor
+- **Other Schemas** - If you want to use explicit tags it is highly recommended to go for other schemas
+
+Each and every schema is explained in upcoming cards
+
+### Failsafe schema
+
+**Tags**
+
+**Generic Mapping** - The common fields that are observed in different types of tags are URI, Kind, Definition, and Example
+**URI** - tag.yaml.org, 2002:map
+**Kind** - Mapping
+**Definition** - Every key is uniquely mapped with unique and single value. YAML has no restriction to the type of key like scalar
+**Example**:
+
+```
+Block style: !!map
+F: Fresco Play
+L: Lynda
+S: Skillsoft
+Flow style: !!map { F:Fresco Play, L: Lynda, S: Skillsoft }
+```
+
+### Generic Sequence
+
+**URI**: tag.yaml.org, 2002:seq
+**Kind**: Sequence
+**Definition**: It represent the collection in a sequential integers starting with zero
+**Example**:
+
+```
+Block style: !!seq
+- F: Fresco Play
+- L: Lynda
+- S: Skillsoft
+Flow style: !!seq [ F:Fresco Play, L: Lynda, S: Skillsoft ]
+```
+
+### Generic String
+
+**URI**: tag:yaml.org, 2002:str
+**Kind**: Scalar
+**Definition**: It represents a unicode string of zero or more unicode characters
+**Example**:
+
+```
+Block style: !!str |-
+  String: You are in Fresco Play.
+
+Flow style: !!str "String: You are in Fresco Play."
+```
+
+### Failsafe Tag Resolution
+
+- The nodes with non-specific tag **!** are resolved by the standard convention "tag:yaml.org, 2002:seq", tag:yaml.org, 2002:map", "tag:yaml.org, 2002:string"
+- The nodes with non-specific tag **?** are unresolved
+
+### JSON Schema
+
+**JSON schema uses the following tags in addition to the failsafe schema**
+
+**Null**
+**URI**: tag.yaml.org, 2002:null
+**Kind**: Scalar
+**Definition**: It doesn't consists of any value. If the mapping has a key and null value then it is valid and it is different from not having a key
+**Example**:
+
+```
+!!null null: value for null key
+key with null value: !!null null
+```
+
+### Boolean
+
+**URI**: tag.yaml.org, 2002:bool
+**Kind**: Scalar
+**Definition**: It contains only two values that is either true or false
+**Example**:
+
+```
+Fresco Play is a part of TCS: !!bool true
+JSON is a superset of YAML: !!bool false
+```
+
+### Integer
+
+**URI**: tag.yaml.org, 2002:int
+**Kind**: Scalar
+**Definition**: It represents finite mathematical integers. It restricts to native integer data type. Some languages allow numbers as both integer and floating point. In some languages integer may overflow the storage capability, so that YAML processor will throw an error by rejecting it
+**Example**:
+
+```
+negative: !!int -54
+zero: !!int 0
+positive: !!int 85
+```
+
+### Floating point
+
+**URI**: tag.yaml.org, 2002:float
+**Kind**: Scalar
+**Definition**: It represents the real numbers, which includes three special values like positive, negative infinity and not a number. Some languages allow number as both integer and floating point values. Not every floating number has the same value, some can be round-tripped
+**Example**:
+
+```
+negative: !!float -8
+zero: !!float 0
+positive: !!float 1.7e2
+infinity: !!float .inf
+not a number: !!float .nan
+```
+
+### JSON Tag resolution
+
+JSON has same tag resolution as that of Failsafe, the only difference is that it is mentioned below
+
+- Collections with non-specific tag **?** are resolved to the standards "tag:yaml.org, 2002:seq", "tag:uaml.org, 2002:map"
+- Scalar with non-specific tag **?** should match a list of regular expression
+
+<table>
+  <tr>
+    <th>Regular Expression</th>
+    <th>Resolved to Tag</th>
+  </tr>
+  <tr>
+    <td>null</td>
+    <td>tag:yaml.org,2002:null</td>
+  </tr>
+  <tr>
+    <td>true or false</td>
+    <td>tag:yaml.org,2002:bool</td>
+  </tr>
+  <tr>
+    <td>-?(0 or [1-9[0-9]*)</td>
+    <td>tag:yaml.org,2002:int</td>
+  </tr>
+  <tr>
+    <td>-? ( 0 or [1-9] [0-9]* ) ( . [0-9]* )? ( [eE] [-+]? [0-9]+ )?</td>
+    <td>tag:yaml.org,2002:float</td>
+  </tr>
+  <tr>
+    <td>| Error</td>
+    <td>tag:yaml.org,2002:int</td>
+  </tr>
+</table>
+
+### Core Schema
+
+Core Schema tags are same as that of JSON tags
+
+**Tag Resolution**
+
+Core Schema tag resolution is an extension of JSON tag resolution but the only difference is that the regular expressions matching the scalar non-specific tag. The following are the regular expressions that are used
+
+<table>
+  <tr>
+    <th>Regular Expression</th>
+    <th>Resolved to Tag</th>
+  </tr>
+  <tr>
+    <td>null or Null or NULL</td>
+    <td>tag:yaml.org, 2002:null</td>
+  </tr>
+  <tr>
+    <td>/* Empty */</td>
+    <td>tag:yaml.org, 2002:null</td>
+  </tr>
+  <tr>
+    <td>true,True,TRUE,false,False and FALSE</td>
+    <td>tag:yaml.org, 2002:null</td>
+  </tr>
+  <tr>
+    <td>[-+]? [0-9]+</td>
+    <td>tag:yaml.org, 2002:int (Base 10)</td>
+  </tr>
+  <tr>
+    <td>0o [0-7]+</td>
+    <td>tag:yaml.org, 2002:int(Base 8)</td>
+  </tr>
+  <tr>
+    <td>0x [0-9a-fA-F]+</td>
+    <td>tag:yaml.org, 2002:int(Base 16)</td>
+  </tr>
+  <tr>
+    <td>[-+]? ( . [0-9]+ or [0-9]+ ( . [0-9]* )? ) ( [eE] [-+]? [0-9]+ )?</td>
+    <td>tag:yaml.org, 2002:float(Number)</td>
+  </tr>
+  <tr>
+    <td>[-+]? ( .inf or .Inf or .INF )</td>
+    <td>tag:yaml.org, 2002:float(infinity)</td>
+  </tr>
+  <tr>
+    <td>.nan or .NaN or .NAN</td>
+    <td>tag:yaml.org, 2002:float(not a number)</td>
+  </tr>
+  <tr>
+    <td>| tag:yaml.org, 2002:str(Default)</td>
+    <td></td>
+  </tr>
+</table>
