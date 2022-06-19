@@ -796,6 +796,336 @@ sls remove
 
 The above command removes the service only if it is in the current directory
 
+## Plugin Commands
+
+Serverless plugins can be managed using CLI
+
+- To list all plugins in plugins repository
+
+```
+sls plugin list
+```
+
+- To search for a specific plugin
+
+```
+sls plugin search --query <plugin_name>
+```
+
+- To install a plugin
+
+```
+sls plugin install --name pluginName
+```
+
+If you want a specific version then use **\<pluginName\>@\<version\>**
+
+- To uninstall a plugin
+
+```
+sls plugin uninstall --name pluginName
+```
+
+## Serverless Print
+
+**print** command prints **serverless.yaml**
+
+**Example**
+
+```
+sls print
+```
+
+Options:
+
+- **--format**: To format configuration in given format ("yaml", "json", "text"). Default is yaml
+- **--path**: To print any sub-value (e.g.: "provider.name")
+- **--transform**: Transform-function to be applied to the value (only "keys" is supported)
+
+### Print Command Examples
+
+Consider this **serverless.yaml**
+
+```
+service: my-service
+provider: azure
+custom:
+  schedule: cron(0 * * * *)
+
+functions:
+  hello:
+    handler: handler.world
+    events:
+      - timer: ${self:custom.schedule}
+```
+
+- Running **sls print** will resolve the value of **timer** section and prints the **yaml** file
+- **sls print --path provider --format text** will print provider name
+- **sls print --path functions --transform keys --format text** will prints all function names
+
+# Serverless - Events
+
+## HTTP Trigger
+
+Your service provider will have HTTP endpoint created for each function you create
+
+This allows you to run a function whenever the API endpoint is hit
+
+The below given **serverless.yaml** specifies that function **fresco** should be called whenever **get** request is made to **api/test/fresco**
+
+```
+# serverless.yml
+
+functions:
+  fresco:
+    handler: handler.fresco
+    events:
+      - http: true
+        x-azure-settings:
+            name: req
+            methods:
+                - get
+            route: test/fresco
+            authLevel: anonymous
+```
+
+### HTTP req Event
+
+Now that you have specified HTTP trigger in your **serverless.yaml** file, the next step is to learn how to access HTTP request from your function
+
+```
+module.exports.fresco = function(context, req) {
+  const query = req.query; // dictionary of query strings
+  const body = req.body; // Parsed body based on content-type
+  const method = req.method; // HTTP Method
+  const originalUrl = req.originalUrl; //Full URL of the request
+  const headers = req.headers; // dictionary of headers
+  const params = req.params; // dictionary of params
+  const rawBody = req.rawBody; // unparsed body
+
+  context.res = {
+      headers:{
+          "content-type":"application/json"
+      },
+      body: {
+          "status":"success"
+      }
+  }
+  context.done();
+};
+```
+
+- As you can see, your function will receive a second argument **req**, which corresponds to HTTP request
+
+## Time Trigger
+
+Azure Timer trigger lets you to trigger your function using Azure Timer
+
+```
+functions:
+  example:
+    handler: handler.fresco
+    events:
+      - timer:
+        x-azure-settings:
+            name: timerObj
+            schedule: 0 */5 * * * *
+```
+
+- The above timer event will trigger **fresco** function once in every five minutes
+- **schedule** should be a valid cron expression
+
+You can use this feature to run periodic operation, such as **DataBase backup**
+
+## Queue Storage Trigger
+
+Azure Functions can listen to **Queue Storage** and carry out actions as per your logic. This is how you can configure your **serverless.yaml** to listen to **storage queues**
+
+```
+functions:
+  example:
+    handler: handler.fresco
+    events:
+      - queue: hello
+        x-azure-settings:
+            name: item
+            connection: AzureWebJobsStorage
+```
+
+- **AzureWebJobsStorage** is an environmental variable that contains the **connection string** of queue storage
+- The function **fresco** is registered for events of **AzureWebJobsStorage**
+
+### Queue Storage Event
+
+Once you register for **Queue Storage** events, your function will receive new item each time **Queue Storage** is modified
+
+```
+// handler.js
+module.exports.hello = function(context, item) {
+  context.log("Received item: ${item}");
+  context.done();
+};
+```
+
+Your function will receive queue item as an **item** parameter. You can perform processing on it as per your requirements
+
+- You can even access any **bound** item value from **context.bindings.\<name\>** as well
+- **\<name\>** is should be same as the one which you have given in **serverless.yml**
+
+### Service Bus Trigger
+
+**Azure Functions** allow you to listen to service bus events
+
+```
+# serverless.yml
+
+functions:
+  example:
+    handler: handler.fresco
+    events:
+      - serviceBus:
+        x-azure-settings:
+            name: item
+            queueName: hello
+            accessRights: manage
+            connection: ServiceBusConnection
+```
+
+- **queueName** specifies the name of the queue to listen
+- **accessRights** specifies the permissions
+  - **manage** Creates queue if it does not exist
+  - **listen** Only read permission
+- **connection** specifies the connection string
+
+### Service Bus Topic Trigger
+
+Azure Service Bus provides Pub/Sub capabilities where your function can subscribe for a specific **topic** and receive notification only for that event
+
+```
+# serverless.yml
+
+functions:
+  example:
+    handler: handler.fresco
+    events:
+      - serviceBus:
+        x-azure-settings:
+            name: item
+            topicName: "topic-hello"
+            subscriptionName: "sub-hello"
+            connection: ServiceBusConnection
+```
+
+The above **yaml** specifies function **fresco** should run as soon as a new Service Bus Topic item added to the subscription "sub-hello"
+
+### Service Bus Event
+
+Function **fresco** is triggered based on your **serverless.yaml** Service Bus event trigger configuration
+
+```
+//handler.js
+module.exports.fresco = function(context, item) {
+  context.log("Received item: ${item}");
+  context.done();
+};
+```
+
+### Event Hub Trigger
+
+Azure Functions can listen to Event Hub actions
+
+```
+# serverless.yml
+
+functions:
+  example:
+    handler: handler.fresco
+    events:
+      - eventHub:
+        x-azure-settings:
+            name: item
+            path: hello
+            consumerGroup: $Default
+            connection: EventHubsConnection
+```
+
+- **path** specifies the name of the event hub
+- **consumerGroup** specifies consumer group, which is used to subscribe to the event hub
+
+### Event Hub Event
+
+Function **fresco** is triggered based on your **event hub** configuration in **serverless.yaml**
+
+```
+// handler.js
+
+module.exports.hello = function(context, item) {
+  context.log(`Received item: ${item}`);
+  context.done();
+};
+```
+
+You'll receive event item as parameter (item) to your function. You can process it further according to your need
+
+### Blob Storage Trigger
+
+Azure Functions can listen to Azure Blob Storage events
+
+```
+# serverless.yml
+
+functions:
+  example:
+    handler: handler.fresco
+    events:
+      - blob:
+        x-azure-settings:
+            name: item
+            path: test/{name}
+            connection: AzureWebJobsStorage
+```
+
+- The above **yaml** specifies that the function **fresco** should be called when new item is put to blob container **test/{name}**
+- **{name}** is the name of the blob
+
+### Blob Storage Event
+
+Function **fresco** will be called as soon as a new item is added to the **blob storage**
+
+```
+// handler.js
+module.exports.fresco = function(context, item) {
+  context.log(`Received item: ${item}`);
+  context.done();
+};
+```
+
+### Other Bindings
+
+- Azure Functions are not just limited to the triggers mentioned so far. You can also set additional input/output bindings
+- Not all triggers/bindings provided by azure is supported yet, keep an eye on documentation for updates
+- You can specify them under x-azure-settings and match properties as functions.json
+- Value of type property in function.json should be the first property's key
+- direction (in|out) here specifies the binding (input|output)
+
+# Downsides
+
+**Serverless** is a fancy concept. You may be tempted to use it in every project. However, it also has its downsides such as:
+
+- Entire project will be managed by the cloud vendor, hence **lesser control** on deployment
+- Services that your serverless ecosystem use vary from **vendor to vendor**
+- **Vendor migration** is not always easy
+- Longer running applications incur a considerable cost
+
+# When to Use?
+
+**Serverless** could be useful during the following situations
+
+- Development to market time should be less
+- Application is well suited for **microservice architecture**
+- Application should **auto scale**
+- You don't wish to spend your time on **server maintenance**
+
 # Resources
 
 - https://www.youtube.com/c/Serverless/videos
