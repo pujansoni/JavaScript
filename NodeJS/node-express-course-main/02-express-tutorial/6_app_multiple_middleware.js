@@ -18,7 +18,7 @@ app.get('/api/products', (req, res) => {
     res.send('Products');
 });
 
-// We can pass in 2 middleware directly in the route similarty as we did in the app.use(): app.get('/api/item', [logger, authorize], (req, res)=> {})
+// We can pass in 2 middleware directly in the route similarly as we did in the app.use(): app.get('/api/item', [logger, authorize], (req, res)=> {})
 app.get('/api/items', (req, res) => {
     // Here we will see the user which is set in the authorize middleware if we request from the route: http://localhost:5000/api/items?user=john
     console.log(req.user);

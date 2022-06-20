@@ -1145,3 +1145,34 @@ A successful GraphQL query is supposed to return a JSON object with a root field
 ### Does GraphQL Support Offline Usage?
 
 GraphQL is a query language for (web) APIs, and in that sense by definition only works online. However, offline support on the client-side is a valid concern. The caching abilities of Relay and Apollo might already be enough for some use cases, but there isn’t a popular solution for actually persisting stored data yet. You can gain some more insights in the GitHub issues of Relay and Apollo where offline support is discussed.
+
+<table>
+  <tr>
+    <th>API Gateway</th>
+    <th>AWS AppSync</th>
+  </tr>
+  <tr>
+    <td>
+      <ul>
+        <li>Fully-managed service</li>
+        <li>Supports caching and WAF at the API level</li>
+        <li>Has custom authorizer/lambda authorizer support</li>
+        <li>No native support fo Cognito group based authorization</li>
+        <li>Difficult to handle real-time communication with web-sockets</li>
+        <li>Direct integration with a lot of AWS services</li>
+        <li>No direct support for response validation</li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+        <li>Fully-managed service</li>
+        <li>Supports API caching and WAF at the API level</li>
+        <li>No lambda authorizer</li>
+        <li>Native support for Cognito group-based authorization</li>
+        <li>Easy realtime communication with websockets at scale using Subscriptions</li>
+        <li>Not many direct integrations</li>
+        <li>Response validation with GraphQL out of the box</li>
+      </ul>
+    </td>
+  </tr>
+</table>
