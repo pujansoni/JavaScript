@@ -2270,3 +2270,135 @@ Build your GraphQL schema to express "how" rather than "what". Then you can impr
 > Get validation and feedback more frequently
 
 Don't try to model your entire busindess domain in one sitting. Rather, build only the part of the schema that you need for one scenario at at time. By gradually expanding the schema, you will get validation and feedback more frequently to steer you toward building the right solution
+
+# Serving over HTTP
+
+HTTP is the most common choice for client-server protocol when using GraphQL because of its ubiquity. Here are some guidelines for setting up a GraphQL server to operate over HTTP
+
+## Web Request Pipeline
+
+Most modern web frameworks use a pipeline model where requests are passed through a stack of middleware (AKA filters/plugin). As the request flows through the pipeline, it can be inspected, transformed, modified, or terminated with a response. GraphQL should be placed after all authentication middleware, so that you have access to the same session and user information you would in your HTTP endpoint handlers
+
+## URIs, Routes
+
+HTTP is commonly associated with REST, which uses "resources" as its core concept. In contrast, GraphQL's conceptual model is an entity graph. As a result, entities in GraphQL are not identified by URLs. Instead, a GraphQL server operates on a single URL/endpoint, usually **/graphql**, and all GraphQL requests for a given service should be directed at this endpoint
+
+## HTTP Methods, Headers, and Body
+
+Your GraphQL HTTP server should handle the HTTP GET and POST methods
+
+### GET request
+
+When receiving an HTTP GET request, the GraphQL query should be specified in the "query" query string. For example, if we wanted to execute the following GraphQL query
+
+```
+{
+  me {
+    name
+  }
+}
+```
+
+This request could be sent via an HTTP GET like so:
+
+```
+http://myapi/graphql?query={me{name}}
+```
+
+Query variables can be sent as a JSON-encoded string in an additional query parameter called **variables**. If the query contains several named operations, an **operationName** query parameter can be used to control which one should be executed
+
+## POST request
+
+A standarad GraphQL POST request should use the **application/json** content type, and include a JSON-encoded body of the following form:
+
+```
+{
+  "query": "...",
+  "operationName": "...",
+  "variables": { "myVariable": "someValue", ... }
+}
+```
+
+**operationName** and **variables** are optional fields. **operationName** is only required if multiple operations are present in the query
+
+In addition to the above, we recommend supporting two additional cases:
+
+- If the "query" query string parameter is present (as in the GET example above), it should be parsed and handled in the same way as the HTTP GET case
+- If the "application/graphql" Content-Type header is present, treat the HTTP POST body contents as the GraphQL query string
+
+## Response
+
+Regardless of the method by which the query and variables were sent, the response should be returned in the body of the request in JSON format. As mentioned in the spec, a query might result in some data and some errors, and those should be returned in a JSON object of the form:
+
+```
+{
+  "data": { ... },
+  "errors": [ ... ]
+}
+```
+
+If there were no errors returned, the **"errors"** field should not be present on the response. If no data is returned, according to the GraphQL spec, the **"data"** field should only be included if no errors occurred during execution
+
+## GraphiQL
+
+GraphiQL is useful during testing and development but should be disabled in production by default. If you are using express-graphql, you can toggle it based on the NODE_ENV environment variable:
+
+```
+app.use('/graphql', graphqlHTTP({
+  schema: MySessionAwareGraphQLSchema,
+  graphiql: process.env.NODE_ENV === 'development',
+}));
+```
+
+# Authorization
+
+> Delegate authorization logic to the business logic layer
+
+Authorization is a type of business logic that describes whether a given user/session/context has permission to perform an action or see a piece of data. For example:
+
+**_Only authors can see their drafts_**
+
+Enforcing this kind of behavior should happen in the business logic layer. It is tempting to place authorziation logic in the GraphQL layer like so:
+
+```
+var postType = new GraphQLObjectType({
+  name: ‘Post’,
+  fields: {
+    body: {
+      type: GraphQLString,
+      resolve: (post, args, context, { rootValue }) => {
+        // return the post body only if the user is the post's author
+        if (context.user && (context.user.id === post.authorId)) {
+          return post.body;
+        }
+        return null;
+      }
+    }
+  }
+});
+```
+
+Notice that we define "author owns a post" by checking whether the post's **authorId** field equals the current user's **id**. Can you spot the problem? We would need to duplicate this ccode for each entry point into the service. Then if the authorization logic is not kept perfectly in sync, users could see different data depending on which API they use. Yikes! We can avoid that by having a single source of truth for authorization
+
+Defining authorization logic inside the resolver is fine when learning GraphQL or prototyping. However, for a production codebase, delegate authorization logic to the business logic layer. Here's an example:
+
+```
+//Authorization logic lives inside postRepository
+var postRepository = require('postRepository');
+
+var postType = new GraphQLObjectType({
+  name: ‘Post’,
+  fields: {
+    body: {
+      type: GraphQLString,
+      resolve: (post, args, context, { rootValue }) => {
+        return postRepository.getBody(context.user, post);
+      }
+    }
+  }
+});
+```
+
+In the example above, we see that the business logic layer requires the caller to provide a user object. If you are using GraphQL.js, the User object should be populated on the **context** argument or **rootValue** in the fourth argument of the resolver
+
+It is recommended to pass a fully-hydrated User object instead of an opaque token or API key to your business logic layer. This way, we can handle the distinct concerns of authentication and authorization in different stages of the request processing pipeline
