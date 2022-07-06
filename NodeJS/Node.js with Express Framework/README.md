@@ -106,3 +106,33 @@ Indentation with white space is vital protocol used by jade to identify the synt
 - Requires a small runtime to use precompiled templates on the client
 - Not suitable for non-HTML output formats
 - No streaming support and somewhat requires high learning curve
+
+# Handlebars Template Engine
+
+**_Handlebars_** provides the power necessary to let you build semantic templates and is largely compatible with **_Mustache_** templates
+
+## Get and Post Routing
+
+POST and GET are two common HTTP Request used for building REST API's
+
+- **GET** request are meant to fetch data from specified resource and **POST** are meant to submit data to a specified resource
+- Express allows you to handle GET and POST request using the instance of **express**
+
+**GET**: Create instance of express and call get method. GET request can be cached and remains in browser history, hence not used for sensitive data (passwords, ATM pins, etc)
+**POST**: Used to pass some data to the for further action
+
+## app object methods
+
+- Routing HTTP requests - **app.METHOD** and **app.param**
+- Configuring middleware - **app.route**
+- Rendering HTML views - **app.render**
+- Registering a template engine - **app.engine**
+
+## Middleware Components
+
+- express.bodyParser - extensible request body parser
+- expressmethodOverride - faux HTTP method support
+- express.cookieParser - cookie parser
+- express.session - session management support with bundled MemoryStore
+- express.static - streaming static file server supporting Range and more
+- express.directory - directory listing middleware
