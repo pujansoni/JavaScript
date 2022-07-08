@@ -594,3 +594,510 @@ We can immediately see a few benefits over the callback-based pattern:
     <td>There can be only one callback</td>
   </tr>
 </table>
+
+# Promise Chaining
+
+Let's return to the problem mentioned earlier, we have a sequence of asynchronous tasks to be performed one after another - for instance, loading scripts
+
+Promises provide a couple of recipes to do that
+
+It looks like this:
+
+```
+new Promise(function(resolve, reject) {
+
+  setTimeout(() => resolve(1), 1000); // (*)
+
+}).then(function(result) { // (**)
+
+  alert(result); // 1
+  return result * 2;
+
+}).then(function(result) { // (***)
+
+  alert(result); // 2
+  return result * 2;
+
+}).then(function(result) {
+
+  alert(result); // 4
+  return result * 2;
+
+});
+```
+
+The idea is that the result is passed through the chain of **.then** handlers
+
+Here the flow is:
+
+1. The initial promise resolves in 1 second
+2. Then the **.then** handler is called, which in turn creates a new promise (resolved with **2** value)
+3. The next **.then** gets the result of the previous one, processes it (doubles) and passes it to the next handler
+4. ...and so on
+
+As the result is passed along the chain of handlers, we can see a sequence of **alert** calls: 1 -> 2 -> 4
+
+![Promise Chaining](./resources/promise_c.png)
+
+The whole thing works, because every call to a **.then** returns a new promise, so that we can call the next **.then** on it
+
+When a handler returns a value, it becomes the result of that promise, so the next **.then** is called with it
+
+**A classic newbie error: technically we can add many .then to a single promise. This is not chaining**
+
+For example:
+
+```
+let promise = new Promise(function(resolve, reject) {
+  setTimeout(() => resolve(1), 1000);
+});
+
+promise.then(function(result) {
+  alert(result); // 1
+  return result * 2;
+});
+
+promise.then(function(result) {
+  alert(result); // 1
+  return result * 2;
+});
+
+promise.then(function(result) {
+  alert(result); // 1
+  return result * 2;
+});
+```
+
+What we did here is just several handlers to one promise. They don't pass the result to each other; instead they process it independently
+
+Here's the picture (compare it with the chaning above):
+
+![Promise Chaining](./resources/promise_c_2.png)
+
+All **.then** on the same promise get the same result - the result of that promise. So in the code above all **alert** show the same: **1**
+
+In practice we rarely need multiple handlers for one promise. Chaining is used much more often
+
+## Returning promises
+
+A handler, used in **.then(handler)** may create and return a promise. In that case further handlers wait until it settles, and then get its result
+
+For instance:
+
+```
+new Promise(function(resolve, reject) {
+
+  setTimeout(() => resolve(1), 1000);
+
+}).then(function(result) {
+
+  alert(result); // 1
+
+  return new Promise((resolve, reject) => { // (*)
+    setTimeout(() => resolve(result * 2), 1000);
+  });
+
+}).then(function(result) { // (**)
+
+  alert(result); // 2
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(result * 2), 1000);
+  });
+
+}).then(function(result) {
+
+  alert(result); // 4
+
+});
+```
+
+Here the first **.then** shows **1** and returns **new Promise(...)**. After one second it resolves, and the result is passed on to the handler of the second **.then**. That handler shows 2 and does the same thing. So the output is the same as in the previous example: 1 -> 2 -> 4, but now with 1 second delay between **alert** calls
+
+Returning promises allows us to build chains of asynchronous actions
+
+## Example: loadScript
+
+Let's use this feature with the promisified **loadScript**, to load scripts one by one, in sequence:
+
+```
+loadScript("/article/promise-chaining/one.js")
+  .then(function(script) {
+    return loadScript("/article/promise-chaining/two.js");
+  })
+  .then(function(script) {
+    return loadScript("/article/promise-chaining/three.js");
+  })
+  .then(function(script) {
+    // use functions declared in scripts
+    // to show that they indeed loaded
+    one();
+    two();
+    three();
+  });
+```
+
+This code can be made bit shorter with arrow functions:
+
+```
+loadScript("/article/promise-chaining/one.js")
+  .then(script => loadScript("/article/promise-chaining/two.js"))
+  .then(script => loadScript("/article/promise-chaining/three.js"))
+  .then(script => {
+    // scripts are loaded, we can use functions declared there
+    one();
+    two();
+    three();
+  });
+```
+
+Here each **loadScript** call returns a promise, and the next **.then** runs when it resolves. Then it initiates the loading of the next script. So scripts are loaded one after another
+
+We can add more asynchronous actions to the chain. Please note that the code is still "flat" - it grows down, not to the right. There are no signs of the "pyramid of doom"
+
+Technically, we could add **.then** directly to each **loadScript**, like this:
+
+```
+loadScript("/article/promise-chaining/one.js").then(script1 => {
+  loadScript("/article/promise-chaining/two.js").then(script2 => {
+    loadScript("/article/promise-chaining/three.js").then(script3 => {
+      // this function has access to variables script1, script2 and script3
+      one();
+      two();
+      three();
+    });
+  });
+});
+```
+
+This code does the same; loads 3 scripts in sequence. But it "grows to the right". So we have the same problem as with callbacks
+
+People who start to use promises sometimes don't know about chaining, so they write it this way. Generally, chaining is preferred
+
+Sometimes, it's ok to write **.then** directly, because the nested function has access to the outer scope. In the example above the most nested callback has access to all variables **script1, script2, script3**. But that's an exception rather than a rule
+
+## Bigger example: fetch
+
+In frontend programming promises are often used for network requests. So let's see an extended example of that
+
+We'll use the fetch method to load the information about the user from the remote server. It has a lot of optional parameters covered in separate chapters, but the basic syntax is quite simple:
+
+```
+let promise = fetch(url);
+```
+
+This makes a network request to the **url** and returns a promise. The promise resolves with a **response** object when the remote server responds with headers, but _before the full response is downloaded_
+
+To read the full response, we should call the method **response.text()**: it returns a promise that resolves when the full text is downloaded from the remote server, with that text as a result
+
+The code below makes a request to **user.json** and loads its text from the server:
+
+```
+fetch('/article/promise-chaining/user.json')
+  // .then below runs when the remote server responds
+  .then(function(response) {
+    // response.text() returns a new promise that resolves with the full response text
+    // when it loads
+    return response.text();
+  })
+  .then(function(text) {
+    // ...and here's the content of the remote file
+    alert(text); // {"name": "iliakan", "isAdmin": true}
+  });
+```
+
+The **response** object returned from **fetch** also includes the method **response.json()** that reads the remote data and parses it as JSON. In our case that's even more convenienct, so let's switch to it
+
+We'll also use arrow functions for brevity:
+
+```
+// same as above, but response.json() parses the remote content as JSON
+fetch('/article/promise-chaining/user.json')
+  .then(response => response.json())
+  .then(user => alert(user.name)); // iliakan, got user name
+```
+
+Now let's do something with the loaded user. For instance, we can make one more request to GitHub, load the user profile and show the avatar:
+
+```
+// Make a request for user.json
+fetch('/article/promise-chaining/user.json')
+  // Load it as json
+  .then(response => response.json())
+  // Make a request to GitHub
+  .then(user => fetch(`https://api.github.com/users/${user.name}`))
+  // Load the response as json
+  .then(response => response.json())
+  // Show the avatar image (githubUser.avatar_url) for 3 seconds (maybe animate it)
+  .then(githubUser => {
+    let img = document.createElement('img');
+    img.src = githubUser.avatar_url;
+    img.className = "promise-avatar-example";
+    document.body.append(img);
+
+    setTimeout(() => img.remove(), 3000); // (*)
+  });
+```
+
+The code works; see comments about the details. However, there's a potential problem in it, a typical error for those who begin to use promises
+
+Look at the line: how can we do something _after_ the avatar has finished showing and gets removed? For instance, we'd like to show a form for editing that user or something else. As of now, there's no way
+
+To make the chain extendable, we need to return a promise that resolves when the avatar finishes showing. Like this:
+
+```
+fetch('/article/promise-chaining/user.json')
+  .then(response => response.json())
+  .then(user => fetch(`https://api.github.com/users/${user.name}`))
+  .then(response => response.json())
+  .then(githubUser => new Promise(function(resolve, reject) { // (*)
+    let img = document.createElement('img');
+    img.src = githubUser.avatar_url;
+    img.className = "promise-avatar-example";
+    document.body.append(img);
+
+    setTimeout(() => {
+      img.remove();
+      resolve(githubUser); // (**)
+    }, 3000);
+  }))
+  // triggers after 3 seconds
+  .then(githubUser => alert(`Finished showing ${githubUser.name}`));
+```
+
+That is, the **.then** handler in line now returns **new Promise**, that becomes settled only after the call of **resolve(githubUser)** in **setTimeout()**. The next **.then** in the chain will wait for that
+
+As a good practice, an asynchronous action should always return a promise. That makes it possible to plan actions after it; even if we don't plan to extend the chain now, we may need it later
+
+Finally, we can split the code into reusable functions:
+
+```
+function loadJson(url) {
+  return fetch(url)
+    .then(response => response.json());
+}
+
+function loadGithubUser(name) {
+  return loadJson(`https://api.github.com/users/${name}`);
+}
+
+function showAvatar(githubUser) {
+  return new Promise(function(resolve, reject) {
+    let img = document.createElement('img');
+    img.src = githubUser.avatar_url;
+    img.className = "promise-avatar-example";
+    document.body.append(img);
+
+    setTimeout(() => {
+      img.remove();
+      resolve(githubUser);
+    }, 3000);
+  });
+}
+
+// Use them:
+loadJson('/article/promise-chaining/user.json')
+  .then(user => loadGithubUser(user.name))
+  .then(showAvatar)
+  .then(githubUser => alert(`Finished showing ${githubUser.name}`));
+  // ...
+```
+
+## Summary
+
+If a **.then** (or **catch/finally**, doesn't matter) handler returns a promise, the rest of the chain waits until it settles. When it does, its result (or error) is passed further
+
+Here's full picture:
+
+![Promise Chaining Summary](./resources/promise_c_3.png)
+
+## Promise: then versus catch
+
+Are these code fragments equal? In other words, do they behave the same way in any circumstances, for any handler functions?
+
+# Error handling with promises
+
+Promise chains are great at error handling. When a promise rejects, the control jumps to the closest rejection handler. That's very convenienct in practice
+
+For instance, in the code below the URL to **fetch** is wrong(no such site) and **.catch** handles the error:
+
+```
+fetch('https://no-such-server.blabla') // rejects
+  .then(response => response.json())
+  .catch(err => alert(err)) // TypeError: failed to fetch (the text may vary)
+```
+
+As you can see, the **.catch** doesn't have to be immediate. It may appear after one or maybe several **.then**. Or, maybe everything is all right with the site, but the response is not valid JSON. The easiest way to catch all errors is to append **.catch** to the end of chain:
+
+```
+fetch('/article/promise-chaining/user.json')
+  .then(response => response.json())
+  .then(user => fetch(`https://api.github.com/users/${user.name}`))
+  .then(response => response.json())
+  .then(githubUser => new Promise((resolve, reject) => {
+    let img = document.createElement('img');
+    img.src = githubUser.avatar_url;
+    img.className = "promise-avatar-example";
+    document.body.append(img);
+
+    setTimeout(() => {
+      img.remove();
+      resolve(githubUser);
+    }, 3000);
+  }))
+  .catch(error => alert(error.message));
+```
+
+Normally, such **.catch** doesn't trigger at all. But if any of the promises above rejects (a network problem or invalid json or whatever), then it would catch it
+
+## Implicit try...catch
+
+The code of a promise executor and promise handlers has an "invisible **try...catch**" around it. If an exception happens, it gets caught and treated as a rejection
+
+For instance, this code:
+
+```
+new Promise((resolve, reject) => {
+  throw new Error("Whoops!");
+}).catch(alert); // Error: Whoops!
+```
+
+Works exactly the same as this:
+
+```
+new Promise((resolve, reject) => {
+  reject(new Error("Whoops!"));
+}).catch(alert); // Error: Whoops!
+```
+
+The "invisible **try...catch** around the executor automatically catches the error and turns it into rejected promise
+
+This happens not only in the executor function, but in its handlers as well. If we **throw** inside a **.then** handler, that means a rejected promise, so the control jumps to the nearest error handler
+
+Here's an example:
+
+```
+new Promise((resolve, reject) => {
+  resolve("ok");
+}).then((result) => {
+  throw new Error("Whoops!"); // rejects the promise
+}).catch(alert); // Error: Whoops!
+```
+
+This happens for all errors, not just those caused by the **throw** statement. For example, a programming error:
+
+```
+new Promise((resolve, reject) => {
+  resolve("ok");
+}).then((result) => {
+  blabla(); // no such function
+}).catch(alert); // ReferenceError: blabla is not defined
+```
+
+The final **.catch** not only catches explicit rejections, but also accidental errors in the handlers above
+
+## Rethrowing
+
+As we already noticed, **.catch** at the end of the chain is similar to **try..catch**. We may have as many **.then** handlers as we want, and then use a single **.catch** at the end to handle errors in all of them
+
+In a regular **try..catch** we can analyze the error and maybe rethrow it if it can't be handled. The same thing is possible for promises
+
+If we **throw** inside **.catch**, then the control goes to the next closest error handler. And if we handle the error and finish normally, then it continues to the next closes successful **.then** handler
+
+In the example below the **.catch** successfully handles the error:
+
+```
+// the execution: catch -> then
+new Promise((resolve, reject) => {
+
+  throw new Error("Whoops!");
+
+}).catch(function(error) {
+
+  alert("The error is handled, continue normally");
+
+}).then(() => alert("Next successful handler runs"));
+```
+
+Here the **.catch** block finishes normally. So the next successful **.then** handler is called
+
+In the example below we see the other situation with **.catch**. The handler catches the error and just can't handle it (e.g. it only knows how to handle **URIError**), so it throws it again:
+
+```
+// the execution: catch -> catch
+new Promise((resolve, reject) => {
+
+  throw new Error("Whoops!");
+
+}).catch(function(error) { // (*)
+
+  if (error instanceof URIError) {
+    // handle it
+  } else {
+    alert("Can't handle such error");
+
+    throw error; // throwing this or another error jumps to the next catch
+  }
+
+}).then(function() {
+  /* doesn't run here */
+}).catch(error => { // (**)
+
+  alert(`The unknown error has occurred: ${error}`);
+  // don't return anything => execution goes the normal way
+
+});
+```
+
+The execution jumps from the first **.catch()** to the next one down the chain
+
+## Unhandled rejections
+
+What happens when an error is not handled? For instance, we forgot to append **.catch** to the end of the chain, like here:
+
+```
+new Promise(function() {
+  noSuchFunction(); // Error here (no such function)
+})
+  .then(() => {
+    // successful promise handlers, one or more
+  }); // without .catch at the end!
+```
+
+In case of an error, the promise becomes rejected, and the execution should jump to the closest rejection handler. But there is none. So the error gets "stuck". There's no code to handle it
+
+In practice, just like with regular unhandled errors in code, it means that something has gone terribly wrong
+
+What happens when a regular error occurs and is not caught by **try..catch**? The script dies with a message in the console. A similar thing happens with unhandled promise rejections
+
+The JavaScript engine tracks such rejections and generates a global error in that case. You can see it in the console if you run the example above
+
+In the browser we can catch such errors using the event **unhandledrejection**:
+
+```
+window.addEventListener('unhandledrejection', function(event) {
+  // the event object has two special properties:
+  alert(event.promise); // [object Promise] - the promise that generated the error
+  alert(event.reason); // Error: Whoops! - the unhandled error object
+});
+
+new Promise(function() {
+  throw new Error("Whoops!");
+}); // no catch to handle the error
+```
+
+The event is the part of the HTML standard.
+
+If an error occurs, and there's no **.catch**, the **unhandledrejection** handler triggers, and gets the **event** object with the information about the error, so we can do something
+
+Usually such errors are unrecoverable, so our best way is to inform the user about the problem and probably report the incident to the server
+
+In non-browser environments like Node.js there are other ways to track unhandled errors
+
+## Summary
+
+- **.catch** handles errors in promises of all kinds: be it a **reject()** call, or an error thrown in a handler
+- **.then** also catches errors in the same manner, if given the second argument (which is the error handler)
+- We should place **.catch** exactly in places where we want to hanlde errors and know how to handle them. The handler should analyze errors (custom error classes help) and rethrow unknown ones (maybe they are programming mistakes)
+- It's ok not to use **.catch** at all, if there's no way to recover from an error
+- In any case we should have the **unhandlerejection** event handler (for browsers, and analogs for other environments) to track unhandled errors and inform the user (and probably our server) about them, so that our app never "just dies"
