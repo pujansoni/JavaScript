@@ -1101,3 +1101,702 @@ In non-browser environments like Node.js there are other ways to track unhandled
 - We should place **.catch** exactly in places where we want to hanlde errors and know how to handle them. The handler should analyze errors (custom error classes help) and rethrow unknown ones (maybe they are programming mistakes)
 - It's ok not to use **.catch** at all, if there's no way to recover from an error
 - In any case we should have the **unhandlerejection** event handler (for browsers, and analogs for other environments) to track unhandled errors and inform the user (and probably our server) about them, so that our app never "just dies"
+
+# Promise API
+
+There are 6 static methods in the **Promise** class. We'll quickly cover their use cases here
+
+## Promise.all
+
+Let's say we want many promises to execute in parallel and wait until all of them are ready. For instance, download several URLs in parallel and process the content once they are all done. That's what **Promise.all** is for. The syntax is:
+
+```
+let promise = Promise.all(iterable);
+```
+
+**Promise.all** takes an iterable (usually, an array of promises) and returns a new promise. The new promise resolves when all listed promises are resolved, and the array of their results becomes its result. For instance, the **Promise.all** below settles after 3 seconds, and then its result is an array **[1, 2, 3]**:
+
+```
+Promise.all([
+  new Promise(resolve => setTimeout(() => resolve(1), 3000)), // 1
+  new Promise(resolve => setTimeout(() => resolve(2), 2000)), // 2
+  new Promise(resolve => setTimeout(() => resolve(3), 1000))  // 3
+]).then(alert); // 1,2,3 when promises are ready: each promise contributes an array member
+```
+
+Please note that the order of the resulting array members is the same as in its source promises. Even though the first promise takes the longest time to resolve, it's still first in the array of results
+
+A common trick is to map an array of job data into an array of promises, and then wrap that into **Promise.all**
+
+For instance, if we have an array of URLs, we can fetch them all like this:
+
+```
+let urls = [
+  'https://api.github.com/users/iliakan',
+  'https://api.github.com/users/remy',
+  'https://api.github.com/users/jeresig'
+];
+
+// map every url to the promise of the fetch
+let requests = urls.map(url => fetch(url));
+
+// Promise.all waits until all jobs are resolved
+Promise.all(requests)
+  .then(responses => responses.forEach(
+    response => alert(`${response.url}: ${response.status}`)
+  ));
+```
+
+A bigger example with fetching user information for an array of GitHub users by their names (we could fetch an array of goods by their ids, the logic is identical):
+
+```
+let names = ['iliakan', 'remy', 'jeresig'];
+
+let requests = names.map(name => fetch(`https://api.github.com/users/${name}`));
+
+Promise.all(requests)
+  .then(responses => {
+    // all responses are resolved successfully
+    for(let response of responses) {
+      alert(`${response.url}: ${response.status}`); // shows 200 for every url
+    }
+
+    return responses;
+  })
+  // map array of responses into an array of response.json() to read their content
+  .then(responses => Promise.all(responses.map(r => r.json())))
+  // all JSON answers are parsed: "users" is the array of them
+  .then(users => users.forEach(user => alert(user.name)));
+```
+
+**If any of the promises is rejected, the promise returned by Promise.all immediately rejects with that error**
+
+For instance:
+
+```
+Promise.all([
+  new Promise((resolve, reject) => setTimeout(() => resolve(1), 1000)),
+  new Promise((resolve, reject) => setTimeout(() => reject(new Error("Whoops!")), 2000)),
+  new Promise((resolve, reject) => setTimeout(() => resolve(3), 3000))
+]).catch(alert); // Error: Whoops!
+```
+
+Here the second promise rejects in two seconds. That leads to an immediate rejection of **Promise.all**, so **.catch** executes, the rejection error becomes the outcome of the entire **Promise.all**
+
+### In case of an error, other promises are ignored
+
+If one promise rejects, **Promise.all** immediately rejects, completely forgetting about the other ones in the list. Their results are ignored
+
+For example, if there are multiple **fetch** calls, like in the example above, and one fails, the others will still continue to execute, but **Promise.all** won't watch them anymore. They will probably settle, but their results will be ignored
+
+**Promise.all** does nothing to cancel them, as there's no concept of "cancellation" in promises. In another chapter, we'll cover AbortController that can help with that, but it's not part of the Promise API
+
+**Promise.all(iterable)** allows non-promise "regular" values in **iterable**
+
+Normally, **Promise.all(...)** accepts an iterable (in most cases an array) of promises. But if any of those objects is not a promise, it's passed to the resulting array "as is"
+
+For instance, here the results are **[1, 2, 3]**:
+
+```
+Promise.all([
+  new Promise((resolve, reject) => {
+    setTimeout(() => resolve(1), 1000)
+  }),
+  2,
+  3
+]).then(alert); // 1, 2, 3
+```
+
+So we are able to pass ready values to **Promise.all** where convenient
+
+## Promise.allSettled
+
+**Promise.all** rejects as a whole if any promise rejects. That's good for "all or nothing" cases, when we need _all_ results successful to proceed:
+
+```
+Promise.all([
+  fetch('/template.html'),
+  fetch('/style.css'),
+  fetch('/data.json')
+]).then(render); // render method needs results of all fetches
+```
+
+**Promise.allSettled** just waits for all promises to settle, regardless of the result. The resulting array has:
+
+- **{status: "fulfilled", value: result}** for successful responses
+- **{status: "rejected", reason: error}** for errors
+
+For example, we'd like to fetch the information about multiple users. Even if one request fails, we're still interested in the others
+
+Let's use **Promise.allSettled**:
+
+```
+let urls = [
+  'https://api.github.com/users/iliakan',
+  'https://api.github.com/users/remy',
+  'https://no-such-url'
+];
+
+Promise.allSettled(urls.map(url => fetch(url)))
+  .then(results => { // (*)
+    results.forEach((result, num) => {
+      if (result.status == "fulfilled") {
+        alert(`${urls[num]}: ${result.value.status}`);
+      }
+      if (result.status == "rejected") {
+        alert(`${urls[num]}: ${result.reason}`);
+      }
+    });
+  });
+```
+
+The **results** will be:
+
+```
+[
+  {status: 'fulfilled', value: ...response...},
+  {status: 'fulfilled', value: ...response...},
+  {status: 'rejected', reason: ...error object...}
+]
+```
+
+So for each promise we get its status and **value/error**
+
+## Polyfill
+
+If the browser doesn't support **Promise.allSettled**, it's easy to polyfill:
+
+```
+if (!Promise.allSettled) {
+  const rejectHandler = reason => ({ status: 'rejected', reason });
+
+  const resolveHandler = value => ({ status: 'fulfilled', value });
+
+  Promise.allSettled = function (promises) {
+    const convertedPromises = promises.map(p => Promise.resolve(p).then(resolveHandler, rejectHandler));
+    return Promise.all(convertedPromises);
+  };
+}
+```
+
+In this code, **promises.map** takes input values, turns them into promises (just in case a non-promise was passed) with **p => Promise.resolve(p)**, and then adds **.then** handler to every one
+
+That handler turns a successful result **value** into **{status: 'fulfilled', value}**, and an error **reason** into **{status: 'rejected', reason}**. That's exactly the format of **Promise.allSettled**
+
+Now we can use **Promise.allSettled** to get the results of _all_ given promises, even if some of them reject
+
+## Promise.race
+
+Similar to **Promise.all**, but waits only for the first settled promise and gets its result(or error)
+
+The syntax is:
+
+```
+let promise = Promise.race(iterable);
+```
+
+For instance, here the result will be **1**:
+
+```
+Promise.race([
+  new Promise((resolve, reject) => setTimeout(() => resolve(1), 1000)),
+  new Promise((resolve, reject) => setTimeout(() => reject(new Error("Whoops!")), 2000)),
+  new Promise((resolve, reject) => setTimeout(() => resolve(3), 3000))
+]).then(alert); // 1
+```
+
+The first promise here was fastest, so it became the result. After the first settled promise "wins the race", all further results/errors are ignored
+
+## Promise.any
+
+Similar to **Promise.race**, but waits only for the first fulfilled promise and gets its result. If all of the given promises are rejected, then the returned promise is rejected with **AggregateError** - a special error object that stores all promise errors in its **errors** property
+
+The syntax is:
+
+```
+let promise = Promise.any(iterable);
+```
+
+For instance, here the result will be:
+
+```
+Promise.any([
+  new Promise((resolve, reject) => setTimeout(() => reject(new Error("Whoops!")), 1000)),
+  new Promise((resolve, reject) => setTimeout(() => resolve(1), 2000)),
+  new Promise((resolve, reject) => setTimeout(() => resolve(3), 3000))
+]).then(alert); // 1
+```
+
+The first promise here was fastest, but it was rejected, so the second promise became the result. After the first fulfilled promise "wins the race", all further results are ignored
+
+Here's an example when all promises fail:
+
+```
+Promise.any([
+  new Promise((resolve, reject) => setTimeout(() => reject(new Error("Ouch!")), 1000)),
+  new Promise((resolve, reject) => setTimeout(() => reject(new Error("Error!")), 2000))
+]).catch(error => {
+  console.log(error.constructor.name); // AggregateError
+  console.log(error.errors[0]); // Error: Ouch!
+  console.log(error.errors[1]); // Error: Error!
+});
+```
+
+As you can see, error objects for failed promises are available in the **errors** property of the **AggregateError** object
+
+## Promise.resolve/reject
+
+Methods **Promise.resolve** and **Promise.reject** are rarely needed in modern code, because **async/await** syntax makes them somewhat obsolete
+
+We cover them here for completeness and for those who can't use **async/await** for some reason
+
+### Promise.resolve
+
+**Promise.resolve(value)** creates a resolved promise with the result **value**
+
+Same as:
+
+```
+let promise = new Promise(resolve => resolve(value));
+```
+
+The method is used for compability, when a function is expected to return a promise.
+
+For example, the **loadCached** function below fetches a URL and remembers (caches) its content. For future calls with the same URL it immediately gets the previous content from cache, but uses **Promise.resolve** to make a promise of it, so the returned value is always a promise:
+
+```
+let cache = new Map();
+
+function loadCached(url) {
+  if (cache.has(url)) {
+    return Promise.resolve(cache.get(url)); // (*)
+  }
+
+  return fetch(url)
+    .then(response => response.text())
+    .then(text => {
+      cache.set(url,text);
+      return text;
+    });
+}
+```
+
+We can write **loadCached(url).then(...)**, because the function is guaranteed to return a promise. We can always use **.then** after **loadCached**. That's the purpose of **Promise.resolve**
+
+### Promise.reject
+
+**Promise.reject(error)** creates a rejected promise with **error**
+
+Same as:
+
+```
+let promise = new Promise((resolve, reject) => reject(error));
+```
+
+In practice, this method is almost never used
+
+# Promisification
+
+"Promisification" is a long word for a simple transformation. It's the conversion of a function that accepts a callback into a function that returns a promise. Such transformations are often required in real-life, as many functions and libraries are callback-based. But promises are more-convenience, so it makes sense to promisify them.
+
+For better understanding, let's see an example
+
+For instance, we have **loadScript(src, callback)**
+
+```
+function loadScript(src, callback) {
+  let script = document.createElement('script');
+  script.src = src;
+
+  script.onload = () => callback(null, script);
+  script.onerror = () => callback(new Error(`Script load error for ${src}`));
+
+  document.head.append(script);
+}
+
+// usage:
+// loadScript('path/script.js', (err, script) => {...})
+```
+
+The function loads a script with the given **src**, and then calls **callback(err)** in case of an error, or **callback(null, script)** in case of successful loading. That's a widespread agreement for using callback, we saw it before
+
+Let's promisify it
+
+We'll make a new function **loadScriptPromise(src)**, that does the same (loads the script), but returns a promise instead of using callbacks
+
+In other words, we pass it only **src** (no **callback**) and get a promise in return, that resolves with **script** when the load is successful, and rejects with the error otherwise
+
+Here it is:
+
+```
+let loadScriptPromise = function(src) {
+  return new Promise((resolve, reject) => {
+    loadScript(src, (err, script) => {
+      if (err) reject(err);
+      else resolve(script);
+    });
+  });
+};
+
+
+// usage:
+// loadScriptPromise('path/script.js').then(...)
+```
+
+As we can see, the new function is a warpper around the original **loadScript** function. It calls it providing its own callback that translates to promise **resolve/reject**
+
+Now **loadScriptPromise** fits well in promise-based code. If we like promises more than callbacks then we will use it instead
+
+In practice we may need to promisify more than one function, so it makes sense to use a helper
+
+We'll call it **promisify(f)**: it accepts a to-promisify function **f** and returns a wrapper function
+
+```
+function promisify(f) {
+  return function (...args) { // return a wrapper-function (*)
+    return new Promise((resolve, reject) => {
+      function callback(err, result) { // our custom callback for f (**)
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+
+      args.push(callback); // append our custom callback to the end of f arguments
+
+      f.call(this, ...args); // call the original function
+    });
+  };
+}
+
+// usage:
+let loadScriptPromise = promisify(loadScript);
+loadScriptPromise(...).then(...);
+```
+
+## Microtasks
+
+Promise handlers **.then/.catch/.finally** are always asynchronous
+
+Even when a Promise is immediately resolved, the code on the lines _below_ **.then/.catch/.finally/** will still execute before these handlers
+
+Here's a demo:
+
+```
+let promise = Promise.resolve();
+promise.then(() => alert("promise done!"));
+
+alert("code finished"); // this alert shows first
+```
+
+If you run it, you see **code finished** first, and then **promise done!**
+
+That's strange, because the promise is definitely done from the beginning
+
+Why did the **.then** trigger afterwards? What's going on?
+
+## Microtasks queue
+
+Asynchronous tasks need proper management. For that, the ECMA standard specifies an internal queue **PromiseJobs**, more often referred to as the "microtask queue"
+
+As stated in the specification:
+
+- The queue is first-in-first-out: tasks enqueued first are run first
+- Execution of a task is initiated only when nothing else is running
+
+Or, to put it more simply, when a promise is ready, it's **.then/.catch/.finally** handlers are put into the queue; they are not executed yet. When the JavaScript engine becomes free from the current code, it takes a task from the queue and executes it
+
+That's why "code finished" in the example above shows first
+
+![Queue Handler](./resources/promise_1.png)
+
+Promise handlers always go through this internal queue. If there's a chain with multiple **.then/catch/finally**, then every one of them is executed asynchronously. That is, it first gets queued, then executed when the current code is complete and previously queued handlers are finished
+
+**What if the order matters for us? How can we make code finished appear after promise done**?
+
+Easy, just put it into the queue with **.then**:
+
+```
+Promise.resolve()
+  .then(() => alert("promise done!"))
+  .then(() => alert("code finished"));
+```
+
+Now the order is as intended
+
+## Unhandled rejection
+
+As "unhandled rejection" occurs when a promise error is not handled at the end of the microtask queue. Normally, if we expect an error, we add **.catch** to the promise chain to handle it:
+
+```
+let promise = Promise.reject(new Error("Promise Failed!"));
+promise.catch(err => alert('caught'));
+
+// doesn't run: error handled
+window.addEventListener('unhandledrejection', event => alert(event.reason));
+```
+
+But if we forget to add **.catch**, then, after the microtask queue is empty, the engine triggers the event:
+
+```
+let promise = Promise.reject(new Error("Promise Failed!"));
+
+// Promise Failed!
+window.addEventListener('unhandledrejection', event => alert(event.reason));
+```
+
+What if we handle the error later? Like this:
+
+```
+let promise = Promise.reject(new Error("Promise Failed!"));
+setTimeout(() => promise.catch(err => alert('caught')), 1000);
+
+// Error: Promise Failed!
+window.addEventListener('unhandledrejection', event => alert(event.reason));
+```
+
+Now, if we run it, we'll see **Promise Failed!** first and then **caught**
+
+If we didn't know about the microtasks queue, we could wonder: "Why did **unhandledrejection** handler run? We did catch and handle the error?"
+
+But now we understand that **unhandledrejection** is generated when the microtask queue is complete: the engine examines promises and, if any of them is in the "rejected" state, then the event triggers
+
+In the example above, **.catch** added by **setTimeout** also triggers. But it does so later, after **unhandledrejection** has already occurred, so it doesn't change anything
+
+## Summary
+
+Promise handling is always asynchronous, as all promise actions pass through the internal "promise jobs" queue also called "microtask queue" (V8 term)
+
+So **.then/catch/finally** handlers are always called after the current code is finished
+
+If we need to guarantee that a piece of code is executed after **.then/catch/finally**, we can add it into a chained **.then** call
+
+# Async/await
+
+There's a special syntax to work with promises in a more comfortable fashion, called "async/await". It's surprisingly easy to understand and use
+
+## Async functions
+
+Let's start with the **async** keyword. It can be placed before a function, like this:
+
+```
+async function f() {
+  return 1;
+}
+```
+
+The word "async" before a function means one simple thing: a function always returns a promise. Other values are wrapped in a resolved promise automatically.
+
+For instance, this funciton returns a resolved promise with the result of 1; let's test it:
+
+```
+async function f() {
+  return 1;
+}
+
+f().then(alert); // 1
+```
+
+We could explicitly return a promise, which would be the same:
+
+```
+async function f() {
+  return Promise.resolve(1);
+}
+
+f().then(alert); // 1
+```
+
+So, **async** ensures that the function returns a promise, and wrapes non-promises in it. Simple enough, right? But not ony that. There's another keyword, **await**, that works only inside **async** functions, and it's pretty cool
+
+## Await
+
+The syntax:
+
+```
+// works only inside async functions
+let value = await promise;
+```
+
+The keyword **await** makes JavaScript wait until that promise settles and returns its result. Here's an example with a promise that resolves in 1 second:
+
+```
+async function f() {
+
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => resolve("done!"), 1000)
+  });
+
+  let result = await promise; // wait until the promise resolves (*)
+
+  alert(result); // "done!"
+}
+
+f();
+```
+
+The function execution “pauses” at the line and resumes when the promise settles, with **result** becoming its result. So the code above shows “done!” in one second.
+
+Let’s emphasize: **await** literally suspends the function execution until the promise settles, and then resumes it with the promise result. That doesn’t cost any CPU resources, because the JavaScript engine can do other jobs in the meantime: execute other scripts, handle events, etc.
+
+It’s just a more elegant syntax of getting the promise result than **promise.then**. And, it’s easier to read and write.
+
+**If we try to use await in a non-async function, there would be a syntax error**
+
+We may get this error if we forget to put async before a function. As stated earlier, await only works inside an async function.
+
+Here we will look at the showAvatar() example:
+
+1. We'll need to replace **.then** calls with **await**
+2. Also we should make the function **async** for them to work
+
+```
+async function showAvatar() {
+
+  // read our JSON
+  let response = await fetch('/article/promise-chaining/user.json');
+  let user = await response.json();
+
+  // read github user
+  let githubResponse = await fetch(`https://api.github.com/users/${user.name}`);
+  let githubUser = await githubResponse.json();
+
+  // show the avatar
+  let img = document.createElement('img');
+  img.src = githubUser.avatar_url;
+  img.className = "promise-avatar-example";
+  document.body.append(img);
+
+  // wait 3 seconds
+  await new Promise((resolve, reject) => setTimeout(resolve, 3000));
+
+  img.remove();
+
+  return githubUser;
+}
+
+showAvatar();
+```
+
+Pretty clean and easy to read, right? Much better than before
+
+## Error handling
+
+If a promise resolves normally, then **await promise** returns the result. But in the case of a rejection, it throws the error, just as if there was a **throw** statement at that line
+
+This code:
+
+```
+async function f() {
+  await Promise.reject(new Error("Whoops!"));
+}
+```
+
+is the same as this:
+
+```
+async function f() {
+  throw new Error("Whoops!");
+}
+```
+
+In real situations, the promise may take some time before it rejects. In that case there will be a delay before **await** throws an error. We can catch that error using **try...catch**, the same way as a regular **throw**:
+
+```
+async function f() {
+
+  try {
+    let response = await fetch('http://no-such-url');
+  } catch(err) {
+    alert(err); // TypeError: failed to fetch
+  }
+}
+
+f();
+```
+
+In the case of an error, the control jumps to the **catch** block. We can also wrap multiple lines:
+
+```
+async function f() {
+
+  try {
+    let response = await fetch('/no-user-here');
+    let user = await response.json();
+  } catch(err) {
+    // catches errors both in fetch and response.json
+    alert(err);
+  }
+}
+
+f();
+```
+
+If we don't have **try...catch**, then the promise generated by the call of the async function **f()** becomes rejected. We can append **.catch** to handle it:
+
+```
+async function f() {
+  let response = await fetch('http://no-such-url');
+}
+
+// f() becomes a rejected promise
+f().catch(alert); // TypeError: failed to fetch // (*)
+```
+
+If we forget to add **.catch** there, then we get an unhandled promise error (viewable int he console). We can catch such errors using a global **unhandledrejection** event handler
+
+### async/await and promise.then/catch
+
+When we use **async/await**, we rarely need **.then**, because **await** handles the waiting for us. And we use a regular **try..catch** instead of **.catch**. That's usually (but not always) more convenient
+
+But at the top level of the code, when we're outside any **async** function, we're syntactically unable to use **await**, so it's a normal practice to add **.then/catch** to handle the final result or falling-through error, like in the line of the example above
+
+## Summary
+
+The **async** keyword before a function has two effects:
+
+1. Makes it always return a promise
+2. Allows **await** to be used in it
+
+The **await** keyword before a promise makes JavaScript wait until that promise settles, and then:
+
+1. If it's an error, an exception is generated - same as if **throw error** were called at that very place.
+2. Otherwise, it returns the result
+
+Together they provide a great framework to write asynchronous code that is easy to both read and write. With **async/await** we rarely need to write **promise.then/catch**, but we still shouldn't forget that they are based on promises, because sometimes (e.g. in the outermost scope) we have to use these methods. Also **Promise.all** is nice when we are waiting for many tasks simultaneously
+
+# Macrotasks and Microtasks
+
+Along with _macrotasks_, described in this chapter, there are _microtasks_
+
+Microtasks come solely from our code. They are usually created by promise: an execution of **.then/catch/finally** handler becomes a microtask. Microtasks are used "under the cover" of **await** as well as it's another form of promise handling
+
+There's also a special function **queueMicrotask(func)** that queues **func** for execution in the microtask queue
+
+\*\*Immediately after every macrotask, the engine executes all tasks from microtask queue, prior to running any other macrotasks or rendering or anything else
+
+For instance, take a look:
+
+```
+setTimeout(() => alert("timeout"));
+
+Promise.resolve()
+  .then(() => alert("promise"));
+
+alert("code");
+```
+
+What's going to be the order here?
+
+1. **code** shows first, because it's a regular synchronous call
+2. **promise** shows second, because **.then** passes through the microtask queue, and runs after the current code
+3. **timeout** shows last, because it's a macrotask
+
+All microtasks are completed before any other event handling or rendering or any other macrotask takes place.
+
+That’s important, as it guarantees that the application environment is basically the same (no mouse coordinate changes, no new network data, etc) between microtasks.
+
+If we’d like to execute a function asynchronously (after the current code), but before changes are rendered or new events handled, we can schedule it with **queueMicrotask**
+
+Here's an example with "counting progress bar", similar to the one shown previously, but **queueMicrotask** is used instead of **setTimeout**. You can see that it renders at the very end. Just like the synchronous code:
