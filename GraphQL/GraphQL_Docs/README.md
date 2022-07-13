@@ -2402,3 +2402,60 @@ var postType = new GraphQLObjectType({
 In the example above, we see that the business logic layer requires the caller to provide a user object. If you are using GraphQL.js, the User object should be populated on the **context** argument or **rootValue** in the fourth argument of the resolver
 
 It is recommended to pass a fully-hydrated User object instead of an opaque token or API key to your business logic layer. This way, we can handle the distinct concerns of authentication and authorization in different stages of the request processing pipeline
+
+# Pagination
+
+> Different pagination models enable different client capabilities
+
+A common use case in GraphQL is traversing the relationship between sets of objects. There are a number of different ways that these relationships can be exposed in GraphQL, giving a varying set of capabilities to the client developer
+
+## Plurals
+
+The simplest way to expose a connection between objects is with a field that returns a plural type. For example, if we wanted to get a list of R2-D2's friends, we could just ask for all of them:
+
+```
+{
+  hero {
+    name
+    friends {
+      name
+    }
+  }
+}
+
+{
+  "data": {
+    "hero": {
+      "name": "R2-D2",
+      "friends": [
+        {
+          "name": "Luke Skywalker"
+        },
+        {
+          "name": "Han Solo"
+        },
+        {
+          "name": "Leia Organa"
+        }
+      ]
+    }
+  }
+}
+```
+
+## Slicing
+
+Quickly, though, we realize that there are additional behaviors a client might want. A client might want to be able to specify how many friends they want to fetch; maybe they only want the first two. So we'd want to expose something like:
+
+```
+{
+  hero {
+    name
+    friends(first:2) {
+      name
+    }
+  }
+}
+```
+
+But if we just fetched the first two, we might want to paginate through the list as well; once the client fetches the first two friends, they might want to send a second request to ask for the next two friends. How can we enable that behavior?
