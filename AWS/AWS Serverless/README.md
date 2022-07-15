@@ -1126,6 +1126,34 @@ module.exports.fresco = function(context, item) {
 - Application should **auto scale**
 - You don't wish to spend your time on **server maintenance**
 
+# AWS Serverless Architecture
+
+In the **Serverless** we never have a consistent running server unlike normal **Server** based architecture. Moreover, in Serverless there is a block of functionality (a function) that runs when an HTTP Request is made from the client
+
+## What triggers the Serverless function
+
+There are different triggers that invoke a Serverless function for e.g. an HTTP Request
+
+Other Examples of triggers for a Serverless function:
+
+![Serverless Function Trigger](./resources/trigger_1.png)
+
+## Pros v/s Cons
+
+Pros: Cheap, Fully Managed, Reduces Complexity
+Cons: Cold Starts, Locked-in, Not Suitable for Long-Term Tasks
+
+Generally, the HTTP requests are passed on to the **API Gateway** and the API Gateway pass this request on and create a Lambda function
+
+**aws-cli** is used to access AWS Services through command line/terminal
+
+While setting up **aws-cli** it's important to have the IAM user with the programmatic access. Moreover, the IAM user should also have the Access Key ID and Secret access Key configured in the **aws-cli** with the command **aws configure**
+
+### Installing Serverless
+
+We can install Serverless with the following command:**npm install -g serverless**
+
 # Resources
 
 - https://www.youtube.com/c/Serverless/videos
+- https://www.youtube.com/watch?v=woqLi6NEW58
