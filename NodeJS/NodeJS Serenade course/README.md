@@ -360,3 +360,18 @@ There are three main steps in using passport.js:
 - Requiring the module and using its **passport.initialize()** and **passport.session()** middleware with express
 - Configuring passport with at least one Strategy and setting up passport's **serializeUser** and **deserializeUser** methods
 - Specifying a route which uses the **passport.authenticate()** middleware to actually authenticate a user
+
+## Passport Methods and Middleware Summary
+
+- **passport.initialize** middleware is invoked on every request. It ensures the session contains a passport.user object, which may be empty
+- **passport.session** middleware is a Passport Strategy which will load the user object onto req.user if a serialised user object was found in the server
+- **passport.deserializeUser** is invoked on every request by passport.session. It enables us to load additional user information on every request. This user object is attached to the request as **req.user** making it accessible in our request handling
+- Local Strategy is only invoked on the route which uses the **passport.authenticate** middleware
+- Only during this authentication **passport.serializeUser** is invoked allowing us to specify what user information should be stored in the session
+
+## Risks in Node.js
+
+- Buffer vulnerabilities due to built-in memory management
+- Vulnerabilities caused by Native serialisation (JS and JSON) and Type manipulation in Node.js
+- Vulnerabilities carried from dependencies or npm packages that you pull
+- Regular Expression Denial of Service (ReDoS) vulnerability was report on HMAC package
