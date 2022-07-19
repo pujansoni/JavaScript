@@ -340,3 +340,23 @@ async function wait(ms) {
   return ms;
 }
 ```
+
+# Passport JS
+
+While logging into any of websites such as social networking websites or banking websites, have you ever thought **How would I implement such an authentication functionality in my application?**
+
+For this Node.js provides an npm package called **Passport.js** for that
+
+Passport is an **authentication middleware** for apps running on Node.js or Express frameworks
+
+It takes out the pain of setting up manual authentication by providing different authentication mechanisms or **strategies** for authentication like **local** (authenticate using username and password), **facebook**, **twitter**, **google** and more
+
+It is extremely flexible and modular in usage
+
+## How to Use Passport
+
+There are three main steps in using passport.js:
+
+- Requiring the module and using its **passport.initialize()** and **passport.session()** middleware with express
+- Configuring passport with at least one Strategy and setting up passport's **serializeUser** and **deserializeUser** methods
+- Specifying a route which uses the **passport.authenticate()** middleware to actually authenticate a user
