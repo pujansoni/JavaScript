@@ -2581,3 +2581,384 @@ To see this in action, there's an additional field in the example schema, called
   }
 }
 ```
+
+# Global Object Identification
+
+> Consistent object access enables simple caching and object lookups
+
+To provide options for GraphQL clients to elegantly handle caching and data refetching, GraphQL servers need to expose object identifiers in a standardized way.
+
+For this to work, a client will need to query via a standard mechanism to request an object by ID. Then, in the response, the schema will need to provide a standard way of providing these IDs.
+
+Because little is known about the object other than its ID, we call these objects "nodes." Here is an example query for a node:
+
+```
+{
+  node(id: "4") {
+    id
+    ... on User {
+      name
+    }
+  }
+```
+
+- The GraphQL schema is formatted to allow fetching any object via the **node** field on the root query object. This returns objects which conform to a "Node" interface.
+- The **id** field can be extracted out of the response safely, and can be stored for re-use via caching and refetching.
+- Clients can use interface fragments to extract additional information specific to the type which conform to the node interface. In this case a "User".
+
+The Node interface looks like:
+
+```
+# An object with a Globally Unique ID
+interface Node {
+  # The ID of the object.
+  id: ID!
+}
+```
+
+With a User conforming via:
+
+```
+type User implements Node {
+  id: ID!
+  # Full name
+  name: String!
+}
+```
+
+## Specification
+
+Everything below describes with more formal requirements a specification around object identification in order to conform to ensure consistency across server implementations. These specifications are based on how a server can be compliant with the Relay API client, but can be useful for any client.
+
+## Reserved Types
+
+A GraphQL server compatible with this spec must reserve certain types and type names to support the consistent object identification model. In particular, this spec creates guidelines for the following types:
+
+- An interface named **Node**
+- The **node** field on the root query type
+
+## Node Interface
+
+The server must provide an interface called **Node**. That interface must include exactly one field, called **id** that returns a non-null **ID**.
+
+This **id** should be a globally unique identifier for this object, and given just this **id**, the server should be able to refetch the object.
+
+### Introspection
+
+A server that correctly implements the above interface will accept the following introspection query, and return the provided response:
+
+```
+{
+  __type(name: "Node") {
+    name
+    kind
+    fields {
+      name
+      type {
+        kind
+        ofType {
+          name
+          kind
+        }
+      }
+    }
+  }
+}
+```
+
+yields
+
+```
+{
+  "__type": {
+    "name": "Node",
+    "kind": "INTERFACE",
+    "fields": [
+      {
+        "name": "id",
+        "type": {
+          "kind": "NON_NULL",
+          "ofType": {
+            "name": "ID",
+            "kind": "SCALAR"
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+## Node root field
+
+The server must provide a root field called **node** that returns the **Node** interface. This root field must take exactly one argument, a non-null ID named **id**.
+
+If a query returns an object that implements **Node**, then this root field should refetch the identical object when value returned by the server in the **Node**'s **id** field is passed as the **id** parameter to the **node** root field.
+
+The server must make a best effort to fetch this data, but it may not always be possible; for example, the server may return a **User** with a valid **id**, but when the request is made to refetch that user with the **node** root field, the user's database may be unavailable, or the user may have deleted their account. In this case, the result of querying this field should be **null**.
+
+### Introspection
+
+A server that correctly implements the above requirement will accept the following introspection query, and return a response that contains the provided response.
+
+```
+{
+  __schema {
+    queryType {
+      fields {
+        name
+        type {
+          name
+          kind
+        }
+        args {
+          name
+          type {
+            kind
+            ofType {
+              name
+              kind
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+yields
+
+```
+{
+  "__schema": {
+    "queryType": {
+      "fields": [
+        // This array may have other entries
+        {
+          "name": "node",
+          "type": {
+            "name": "Node",
+            "kind": "INTERFACE"
+          },
+          "args": [
+            {
+              "name": "id",
+              "type": {
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+## Field stability
+
+If two objects appear in a query, both implementing **Node** with identical IDs, then the two objects must be equal
+
+For the purposes of this definition, object equality is defined as follows:
+
+- If a field is queried on both objects, the result of querying that field on the first object must be equal to the result of querying that field on the second object.
+  - If the field returns a scalar, equality is defined as is appropriate for that scalar.
+  - If the field returns an enum, equality is defined as both fields returning the same enum value.
+  - If the field returns an object, equality is defined recursively as per the above.
+
+For example:
+
+```
+{
+  fourNode: node(id: "4") {
+    id
+    ... on User {
+      name
+      userWithIdOneGreater {
+        id
+        name
+      }
+    }
+  }
+  fiveNode: node(id: "5") {
+    id
+    ... on User {
+      name
+      userWithIdOneLess {
+        id
+        name
+      }
+    }
+  }
+}
+```
+
+might return:
+
+```
+{
+  "fourNode": {
+    "id": "4",
+    "name": "Mark Zuckerberg",
+    "userWithIdOneGreater": {
+      "id": "5",
+      "name": "Chris Hughes"
+    }
+  },
+  "fiveNode": {
+    "id": "5",
+    "name": "Chris Hughes",
+    "userWithIdOneLess": {
+      "id": "4",
+      "name": "Mark Zuckerberg",
+    }
+  }
+}
+```
+
+Because **fourNode.id** and **fiveNode.userWithIdOneLess.id** are the same, we are guaranteed by the conditions above that **fourNode.name** must be the same as **fiveNode.userWithIdOneLess.name**, and indeed it is
+
+## Plural identifying root fields
+
+Imagine a root field named **username**, that takes a user's username and returns the corresponding user:
+
+```
+{
+  username(username: "zuck") {
+    id
+  }
+}
+```
+
+might return:
+
+```
+{
+  "username": {
+    "id": "4",
+  }
+}
+```
+
+Clearly, we can link up the object in the response, the user with ID 4, with the request, identifying the object with username "zuck". Now imagine a root field named **usernames**, that takes a list of usernames and returns a list of objects:
+
+```
+{
+  usernames(usernames: ["zuck", "moskov"]) {
+    id
+  }
+}
+```
+
+might return:
+
+```
+{
+  "usernames": [
+    {
+      "id": "4",
+    },
+    {
+      "id": "6"
+    }
+  ]
+}
+```
+
+For clients to be able to link the usernames to the responses, it needs to know that the array in the response will be the same size as the array passed as an argument, and that the order in the response will match the order in the argument. We call these _plural identifying root fields_, and their requirements are described below.
+
+## Fields
+
+A server compliant with this spec may expose root fields that accept a list of input arguments, and returns a list of responses. For spec-compliant clients to use these fields, these fields must be _plural identifying root fields_, and obey the following requirements.
+
+NOTE Spec-compliant servers may expose root fields that are not _plural identifying root fields_; the spec-compliant client will just be unable to use those fields as root fields in its queries.
+
+_Plural identifying root_ fields must have a single argument. The type of that argument must be a non-null list of non-nulls. In our **usernames** example, the field would take a single argument named **usernames**, whose type (using our type system shorthand) would be \[String!]!.
+
+The return type of a _plural identifying root field_ must be a list, or a non-null wrapper around a list. The list must wrap the **Node** interface, an object that implements the **Node** interface, or a non-null wrapper around those types.
+
+Whenever the _plural identifying root field_ is used, the length of the list in the response must be the same as the length of the list in the arguments. Each item in the response must correspond to its item in the input; more formally, if passing the root field an input list **Lin** resulted in output value **Lout**, then for an arbitrary permutation **P**, passing the root field **P(Lin)** must result in output value **P(Lout)**.
+
+Because of this, servers are advised to not have the response type wrap a non-null wrapper, because if it is unable to fetch the object for a given entry in the input, it still must provide a value in the output for that input entry; **null** is a useful value for doing so.
+
+# Caching
+
+> Providing Object Identifiers allows clients to build rich caches
+
+In an endpoing-based API, clients can use HTTP caching to easily avoid refetching resources, and for identifying when two resources are the same. The URL in these APIs is a **globally unique identifier** that the client can leverage to build a cache. In GraphQL, though, there's no URL-like primitive that provides this globally unique identifier for a given object. It's hence a best practice for the API to expose such an identifier for clients to use
+
+## Globally Unique IDs
+
+One possible pattern for this is reserving a field, like **id**, to be a globally unique identifier. The example schema used throughout these docs uses this approach:
+
+```
+{
+  starship(id:"3003") {
+    id
+    name
+  }
+  droid(id:"2001") {
+    id
+    name
+    friends {
+      id
+      name
+    }
+  }
+}
+```
+
+```
+{
+  "data": {
+    "starship": {
+      "id": "3003",
+      "name": "Imperial shuttle"
+    },
+    "droid": {
+      "id": "2001",
+      "name": "R2-D2",
+      "friends": [
+        {
+          "id": "1000",
+          "name": "Luke Skywalker"
+        },
+        {
+          "id": "1002",
+          "name": "Han Solo"
+        },
+        {
+          "id": "1003",
+          "name": "Leia Organa"
+        }
+      ]
+    }
+  }
+}
+```
+
+This is a powerful tool to hand to client developers. In the same way that the URLs of a resource-based API provided a globally unique key, the **id** field in this system provides a globally unique key.
+
+If the backend uses something like UUIDs for identifiers, then exposing this globally unique ID may be very straightforward! If the backend doesn't have a globally unique ID for every object already, the GraphQL layer might have to construct this. Oftentimes, that's as simple as appending the name of the type to the ID and using that as the identifier; the server might then make that ID opaque by base64-encoding it.
+
+Optionally, this ID can then be used to work with the Global Object Identification's **node** pattern.
+
+## Compatibility with existing APIs
+
+One concern with using the **id** field for this purpose is how a client using the GraphQL API would work with existing APIs. For example, if our existing API accepted a type-specific ID, but our GraphQL API uses globally unique IDs, then using both at once can be tricky.
+
+In these cases, the GraphQL API can expose the previous API's IDs in a separate field. This gives us the best of both worlds:
+
+- GraphQL clients can continue to rely on a consistent mechanism for getting a globally unique ID
+- Clients that need to work with our previous API can also fetch **previousApiId** from the object, and use that
+
+## Alternatives
+
+While globally unique IDs have proven to be powerful pattern in the past, they are not the only pattern that can be used, nor are they right for every situation. The really critical functionality that the client needs is the ability to derive a globally unique identifier for their caching. While having the server derive that ID simplifies the client, the client can also derive the identifier. Oftentimes, this would be as simple as combining the type of the object (queried with **\_\_typename**) with some type-unique identifier.
+
+Additionally, if replacing an existing API with a GraphQL API, it may be confusing if all of the fields in GraphQL are the same **except id**, which changed to be globally unique. This would be another reason why one might choose not to use **id** as the globally unique field.
