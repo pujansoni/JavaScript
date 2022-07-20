@@ -375,3 +375,89 @@ There are three main steps in using passport.js:
 - Vulnerabilities caused by Native serialisation (JS and JSON) and Type manipulation in Node.js
 - Vulnerabilities carried from dependencies or npm packages that you pull
 - Regular Expression Denial of Service (ReDoS) vulnerability was report on HMAC package
+
+# What is Socket.IO?
+
+In a chat application like Facebook messenger or Whatsapp you are able to see the other person's status like say typing or seen message or delivered etc in a realtime manner.
+
+This is not achieved by the regular HTTP calls because they are very slow and limited. So if we want this real time in our application, we can achieve it using **Socket.Io** module of npm.
+
+**Sockets** are really fast and are capable of sending only those data packets which are needed. It enables real-time event-based communication between one or more clients and a server. It is often used in analytics, document collaboration, streaming and instant messaging.
+
+## Using Socket.IO Server Side
+
+Here we will learn how to use Socket.IO in server side. To begin with, install Socket.io using the following command -
+
+```
+$ npm install socket.io
+```
+
+So we need to use it in our server side application code. The first thing we need to do is **require** the library and start listening for events coming in from the client side. We can listen via an Express server, or just use its own.
+
+For example,
+
+```
+var io = require('socket.io'),
+    express = require('express');
+
+// Via Express 3.x server
+var app = express(),
+    server = require('http').createServer(app),
+    io = io.listen(server);
+server.listen(80);
+
+// Via Express 2.x server
+var app = express.createServer(),
+    io = io.listen(app);
+app.listen(80);
+
+// Standalone
+io = io.listen(80);
+
+// Now let's set up and start listening for events
+io.sockets.on('connection', function(socket) {
+    // We're connected to someone now. Let's listen for events from them
+    socket.on('some event', function(data) {
+        // We've received some data. Let's just log it
+        console.log(data);
+        // Now let's reply
+        socket.emit('event', {some: "data"}); //``Line A``
+    });
+});
+```
+
+If we want to broadcast messages to all of the connected clients rather than to just a specific one, instead of calling **socket.emit** in line A, we have to call **io.sockets.emit**, which will send the message to every client
+
+## Moving on to the Client
+
+A standalone build of **socket.io-client** is exposed automatically by the **socket.io** server as /socket.io/socket.io.js. We need to point to the URL of the IO server and add "/socket.io/socket.io.js" in our client side script
+
+For example,
+
+```
+<!-- Normally -->
+<script src="http://<uri:port>/socket.io/socket.io.js"></script>
+<!-- If same port as Express -->
+<script src="/socket.io/socket.io.js"></script>
+```
+
+Now first we need to connect to the back end. It's really simple. Just call a function and give the URL of the Socket.IO server, and then use the socket in the same manner as used in the back end
+
+```
+var socket = io.connect("http://<uri:port>/");
+socket.on("connect", function() {
+    // Do stuff when we connect to the server
+});
+socket.on("some event", function(data) {
+    // Log the data I received
+    console.log(data);
+    // Send a message to the server
+    socket.emit("other event", {some: "data"});
+});
+```
+
+## What are websockets?
+
+- Communication between a client(browser) and server
+- Bidirectional (data flows both ways)
+- Allows real-time data flow
