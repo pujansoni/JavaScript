@@ -461,3 +461,133 @@ socket.on("some event", function(data) {
 - Communication between a client(browser) and server
 - Bidirectional (data flows both ways)
 - Allows real-time data flow
+
+## More about Socket.io
+
+We just saw some features of socket.io like sending and receiving messages and getting notified. Not only that it has many advanced features which help you develop your app with rich-features.
+
+If we want to do something on disconnct, we have to use **disconnect** event like this:
+
+```
+socket.on("disconnect", function() {
+    // Let the users know something bad happened or log the disconnect
+});
+```
+
+We don't need to think about reconnection. Socket.IO reconnects on its own for a number of times and for each attempt it widens the time and stops after few attempts. So you might want to throw some **setTimeouts** in there to continue trying to reconnect later if you want.
+
+You can disconnect on purpose, which does not cause the client to try connecting again by using
+
+```
+// Client side
+socket.disconnect();
+```
+
+## The 'message' Event
+
+The **message** event is used to make Socket.IO conform more closely to the **WebSocket** semantics. Hence, within this single callback, all the messages are received and dealt with, and there is no need to make up names for the messages. When using this, you also use **send** rather than **emit** to send messages. Server and Client side code will look like,
+
+```
+// Server Side
+io.listen(80);
+io.sockets.on('connection', function (socket) {
+    socket.on('message', function (message) {
+        console.log(message);
+        socket.send('message was received');
+    });
+});
+
+// Client Side
+socket = io.connect('http://localhost/');
+socket.on('connect', function() {
+    . . .
+});
+socket.on('message', function (message) {
+    console.log(message);
+    socket.send('message was received');
+});
+```
+
+## Segmenting Users: Rooms and Namespaces
+
+You don't want to lump up the users in the same arena and sometimes you want to send messages to only particular clients and not everyone. For this, we have two different ways of segmenting users: **Rooms** and **Namespaces**
+
+### Rooms
+
+Users can be assigned to different rooms and then can be contacted when broadcasted to that room
+
+Let's see how clients can be assigned to and removed from rooms. Simply use **socket.join** and **socket.leave** to join and leave rooms respectively
+
+```
+// Client Side
+socket.on('addToRoom', function(roomName) {
+    socket.join(roomName);
+});
+socket.on('removeFromRoom', function(roomName) {
+    socket.leave(roomName);
+});
+```
+
+A socket can join multiple rooms at once. Now that you're assigned to a room, whenever someone broadcasts to the entire room, you will be notified. Here's how you broadcast to rooms:
+
+```
+// Broadcast to everyone in a room, except you
+socket.broadcast.to("room name").emit("your message");
+// Broadcast to everyone in a room, including you
+io.sockets.in("room name").emit("your message");
+```
+
+### Namespaces
+
+**Namespaces** allow to have multiple connections to multiple Socket.IO servers but use only single Socket.IO server
+
+In a simple way of explaining, a single server acts as multiple servers that you can connect to separately. While the intention is different, it does work to segregate users
+
+Here let's setup the server side to allow multiple connections:
+
+```
+var io = require('socket.io').listen(80);
+var chat = io
+    .of('/chat')
+    .on('connection', function (socket) {
+        // Send message to client like usual
+        socket.emit('a message', { that: 'only', socket: 'will get' });
+        // Broadcast message to everyone in this namespace
+        chat.emit('a message', { everyone: 'in', '/chat': 'will get' });
+    });
+var news = io
+    .of('/news');
+    .on('connection', function (socket) {
+        socket.emit('item', { news: 'item' });
+    });
+```
+
+If you observe you are replacing sockets with of('/namespace') when you start the \*\*on('connection', function(){}) call
+
+## Storing Client Data
+
+Socket.IO offers session storage that can be used to store information of connected socket client. It's simple to use
+
+```
+// Server Side
+socket.on('set nickname', function (name) {
+    socket.set('nickname', name, function () {
+        socket.emit('ready');
+    });
+});
+socket.on('msg', function () {
+    socket.get('nickname', function (err, name) {
+        console.log('Chat message by ', name);
+    });
+});
+// Client Side
+socket.emit('set nickname', user.nickname);
+socket.on('ready', function () {
+    console.log('Connected !');
+    socket.emit('msg', message);
+});
+```
+
+As you can see, it is storing a user's nickname so that everyone in a chat can know who is sending the messages. Simply use **socket.set** and **socket.get**. But you have to notice that they are asynchronous. So they require a callback if you want to do anything immediately after the value is saved or retrieved
+
+## Message Event
